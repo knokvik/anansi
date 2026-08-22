@@ -1,0 +1,22 @@
+{
+  "name": "anansi",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A self-healing control plane for Bright Data Scraper Studio collectors.",
+  "license": "MIT",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm --filter @anansi/core build && pnpm --filter @anansi/cli build",
+    "test": "pnpm --filter @anansi/core test && pnpm --filter @anansi/cli test",
+    "typecheck": "pnpm -r typecheck",
+    "anansi": "pnpm --filter @anansi/cli exec anansi",
+    "dashboard": "pnpm --filter @anansi/web dev",
+    "breakroom": "node scripts/serve-breakroom.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

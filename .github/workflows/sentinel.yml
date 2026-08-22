@@ -1,0 +1,83 @@
+name: Sentinel
+
+# The scraper that fixes itself while you sleep.
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Detect and report only; never spend credits on a heal"
+        type: boolean
+        default: false
+
+concurrency:
+  group: sentinel
+  cancel-in-progress: false
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: 9 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Sweep the fleet
+        id: sweep
+        env:
+          BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+        run: |
+          MODE=watch
+          [ "${{ inputs.dry_run }}" = "true" ] && MODE=check
+          node apps/cli/dist/src/index.js "$MODE" --ledger ./data/ledger.jsonl --verbose | tee sweep.log
+        continue-on-error: true
+
+      - name: Refresh the dashboard feed
+        if: always()
+        run: node apps/cli/dist/src/index.js report --ledger ./data/ledger.jsonl
+
+      # The ledger is append-only history, so it belongs in the repository:
+      # every heal the fleet performed is reviewable in the commit log.
+      - name: Commit the ledger
+        if: always()
+        run: |
+          git config user.name  "anansi-sentinel"
+          git config user.email "anansi-sentinel@users.noreply.github.com"
+          git add data/ledger.jsonl apps/dashboard/feed.json
+          git diff --staged --quiet || git commit -m "chore(sentinel): nightly sweep $(date -u +%F)"
+          git push
+
+      - name: Escalate anything the gate refused
+        if: steps.sweep.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const log = fs.readFileSync('sweep.log', 'utf8').slice(-5000);
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Sentinel: a collector could not be healed automatically`,
+              body: [
+                'The nightly sweep finished with unresolved collectors.',
+                'A heal was either refused by the contract gate or failed its verification run.',
+                '',
+                '```',
+                log,
+                '```',
+              ].join('\n'),
+              labels: ['sentinel'],
+            });
+
+      - name: Fail the job when the fleet is unresolved
+        if: steps.sweep.outcome == 'failure'
+        run: exit 1

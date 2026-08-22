@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Anansi — self-healing collector fleet</title>
+<meta name="description" content="Live health of a Bright Data Scraper Studio collector fleet: what broke, what repaired it, and whether the repair held.">
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="shell">
+
+  <header class="masthead">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <circle cx="20" cy="20" r="18" stroke="#222936"/>
+        <circle cx="20" cy="20" r="12" stroke="#2c3444"/>
+        <circle cx="20" cy="20" r="6" stroke="#3a4356"/>
+        <path d="M20 2v36M2 20h36M7.3 7.3l25.4 25.4M32.7 7.3L7.3 32.7" stroke="#222936"/>
+        <circle cx="20" cy="20" r="3.2" fill="#a78bfa"/>
+      </svg>
+      <div>
+        <h1>Anansi</h1>
+        <p>Self-healing control plane for Bright Data collectors</p>
+      </div>
+    </div>
+    <div class="fleet-stat" id="fleet-stat"></div>
+  </header>
+
+  <p class="thesis">
+    A scraper does not fail loudly. It returns <strong>rows that are shaped right and empty inside</strong>,
+    and everything downstream keeps running on nothing. Anansi scores every run against a contract,
+    writes the repair prompt from that contract, and refuses any fix that does not measurably hold —
+    <strong>all against the same Collector ID</strong>, so nothing downstream is ever repointed.
+  </p>
+
+  <div class="grid" id="collectors"></div>
+
+  <h3 class="section">Decision log</h3>
+  <div class="timeline" id="timeline"></div>
+
+  <footer>
+    <span>Built for Into the Scrape-Verse · Bright Data Scraper Studio</span>
+    <span id="generated"></span>
+  </footer>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>

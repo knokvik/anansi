@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "comment": "No project references: @anansi/core is consumed as a built workspace package, so `pnpm build` must build core first.",
+  "compilerOptions": { "outDir": "dist", "rootDir": "." },
+  "include": ["src/**/*.ts", "test/**/*.ts"]
+}

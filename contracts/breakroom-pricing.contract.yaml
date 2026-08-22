@@ -1,0 +1,53 @@
+# The Break Room: a target page we control, so a layout change can be triggered
+# on demand instead of waiting for a real site to redesign itself.
+# See apps/breakroom/README.md.
+id: breakroom-pricing
+name: Break Room — Nimbus AI model pricing
+
+# Replaced by the real c_* id from `bdata scraper create`. See docs/COLLECTORS.md.
+collectorId: c_pendingcreate
+
+canaries:
+  - https://knokvik.github.io/anansi/
+
+healBelowScore: 0.8
+
+shape:
+  minRows: 5
+  maxRowShrinkRatio: 0.4
+
+fields:
+  - name: model_name
+    description: The display name of the model, as shown as the heading of its row or card
+    type: string
+    required: true
+    minFillRate: 1.0
+
+  - name: input_price_usd_per_mtok
+    description: Price in US dollars to process one million input tokens, as a plain number
+    type: number
+    required: true
+    minFillRate: 1.0
+    min: 0
+    max: 10000
+
+  - name: output_price_usd_per_mtok
+    description: Price in US dollars to generate one million output tokens, as a plain number
+    type: number
+    required: true
+    minFillRate: 1.0
+    min: 0
+    max: 10000
+
+  - name: context_window_tokens
+    description: Maximum context length the model accepts, in tokens, as an integer
+    type: integer
+    required: true
+    minFillRate: 1.0
+    min: 1000
+
+  - name: lifecycle_status
+    description: Whether the model is GA, Preview, or carries a deprecation date
+    type: string
+    required: true
+    minFillRate: 1.0

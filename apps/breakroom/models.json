@@ -1,0 +1,11 @@
+{
+  "vendor": "Nimbus AI",
+  "note": "Fictional vendor. This page exists only so a layout change can be triggered on demand for the Anansi self-healing demo.",
+  "models": [
+    { "name": "Nimbus Titan",  "input": 15.0, "output": 75.0, "context": 200000, "status": "GA" },
+    { "name": "Nimbus Vale",   "input": 3.0,  "output": 15.0, "context": 200000, "status": "GA" },
+    { "name": "Nimbus Wisp",   "input": 0.8,  "output": 4.0,  "context": 200000, "status": "GA" },
+    { "name": "Nimbus Cirrus", "input": 1.1,  "output": 5.5,  "context": 128000, "status": "Deprecated 2026-11-01" },
+    { "name": "Nimbus Strato", "input": 6.4,  "output": 32.0, "context": 400000, "status": "Preview" }
+  ]
+}
