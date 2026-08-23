@@ -32,6 +32,41 @@ const timeOf = (iso) =>
     second: "2-digit",
   });
 
+/* ---------- theme ---------- */
+function initTheme() {
+  const root = document.documentElement;
+  const sun = document.getElementById("theme-icon-sun");
+  const moon = document.getElementById("theme-icon-moon");
+  const toggle = document.getElementById("theme-toggle");
+
+  const isDark = () => {
+    const forced = root.getAttribute("data-theme");
+    if (forced) return forced === "dark";
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  };
+
+  const sync = () => {
+    const dark = isDark();
+    sun.hidden = dark;
+    moon.hidden = !dark;
+  };
+
+  toggle.addEventListener("click", () => {
+    const next = isDark() ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try {
+      localStorage.setItem("anansi-theme", next);
+    } catch {
+      // Private browsing or similar — theme just won't persist across reloads.
+    }
+    sync();
+  });
+
+  sync();
+}
+
+initTheme();
+
 async function loadFeed() {
   const response = await fetch("./feed.json", { cache: "no-store" });
   if (!response.ok) throw new Error(`feed.json returned ${response.status}`);
@@ -51,6 +86,7 @@ function latestHealth(events) {
 
 function renderFleetStat(reports) {
   const host = document.getElementById("fleet-stat");
+  host.innerHTML = "";
   const all = [...reports.values()];
   const healthy = all.filter((r) => r.status === "healthy").length;
   const mean = all.length ? all.reduce((sum, r) => sum + r.score, 0) / all.length : 0;
@@ -141,6 +177,7 @@ const EVENT_TEXT = {
 
 function renderTimeline(events) {
   const host = document.getElementById("timeline");
+  host.innerHTML = "";
   for (const event of [...events].reverse()) {
     const describe = EVENT_TEXT[event.kind];
     if (!describe) continue;
@@ -245,6 +282,71 @@ function renderTopicCard(topic, novelty = null) {
   return card;
 }
 
+/* ---------- live metrics ---------- */
+function metricTile(label, value, sub, live) {
+  const tile = el("div", `metric-tile${live ? " live" : ""}`);
+  tile.append(el("div", "m-label", label), el("div", "m-value", value));
+  if (sub) tile.append(el("div", "m-sub", sub));
+  return tile;
+}
+
+/** Rebuilds the metrics row. `session` is the /api/status payload when the interactive server is present, or null on the static deployment. */
+function renderMetrics({ reports, topics, session }) {
+  const host = document.getElementById("metrics-grid");
+  host.innerHTML = "";
+  const live = session !== null;
+
+  const allScores = [...reports.values()].map((r) => r.score).concat(topics.map((t) => t.lastScore));
+  const meanScore = allScores.length ? allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+  const standing = topics.filter((t) => t.standing).length;
+
+  host.append(metricTile("Tracked", String(reports.size + topics.length), `${reports.size} scheduled · ${topics.length} radar`, live));
+  host.append(metricTile("Avg score", meanScore.toFixed(2), meanScore >= 0.8 ? "healthy" : meanScore >= 0.5 ? "degraded" : "broken", live));
+  host.append(metricTile("Standing topics", String(standing), "earned a place in the nightly sweep", live));
+
+  if (session) {
+    const { stats } = session;
+    const hitRate = stats.askCount > 0 ? Math.round((stats.cacheHits / stats.askCount) * 100) : 0;
+    host.append(metricTile("This session", String(stats.askCount), `${stats.askCount} ask${stats.askCount === 1 ? "" : "s"} since server start`, true));
+    host.append(metricTile("Cache hit rate", `${hitRate}%`, `${stats.cacheHits} free · ${stats.liveResolves} live scrapes`, true));
+  }
+}
+
+/* ---------- scraper activity feed ---------- */
+const ACTIVITY_TEXT = {
+  run: (e) => ["→", `Scraped <b>${e.contractId}</b> — ${e.rowCount} rows`, ""],
+  health: (e) => [e.report.status === "healthy" ? "✓" : "!", `<b>${e.contractId}</b> scored ${e.report.status} (${e.report.score.toFixed(2)})`, e.report.status === "healthy" ? "ok" : "bad"],
+  heal_proposed: (e) => ["✎", `Proposed a heal for <b>${e.contractId}</b>`, "act"],
+  heal_gated: (e) => [e.verdict.decision === "approve" ? "✓" : "✗", `Gate <b>${e.verdict.decision}d</b> the fix for ${e.contractId}`, e.verdict.decision === "approve" ? "ok" : "bad"],
+  heal_settled: (e) => ["⇢", `Sent <b>${e.decision}</b> to Scraper Studio`, "act"],
+  verified: (e) => [e.report.status === "healthy" ? "✓" : "!", `Verified <b>${e.contractId}</b> — ${e.report.status} (${e.report.score.toFixed(2)})`, e.report.status === "healthy" ? "ok" : "bad"],
+  escalated: (e) => ["⚠", `Escalated <b>${e.contractId}</b> — ${e.reason.slice(0, 90)}`, "bad"],
+  freshness_adjusted: (e) => ["↻", `<b>${e.contractId}</b> freshness → ${e.toTtlSeconds}s`, "act"],
+};
+
+function renderActivity(events) {
+  const host = document.getElementById("activity-feed");
+  host.innerHTML = "";
+  const recent = [...events].reverse().slice(0, 8);
+
+  if (recent.length === 0) {
+    host.append(el("div", "empty", "No activity yet."));
+    return;
+  }
+
+  for (const event of recent) {
+    const describe = ACTIVITY_TEXT[event.kind];
+    if (!describe) continue;
+    const [icon, html, tone] = describe(event);
+    const row = el("div", `activity-row ${tone}`);
+    row.append(el("div", "a-icon", icon));
+    const text = el("div", "a-text");
+    text.innerHTML = html;
+    row.append(text, el("div", "a-time", timeOf(event.at)));
+    host.append(row);
+  }
+}
+
 const PIPE_STAGES = ["cache", "scrape", "score", "heal", "done"];
 
 function setPipeline(states) {
@@ -296,6 +398,7 @@ async function handleAsk(event) {
     setPipeline(pipelineForResult(result.status));
     const host = document.getElementById("ask-result");
     host.append(renderTopicCard(result.entry, result.novelty));
+    await refreshLive();
   } catch (cause) {
     setPipeline({ cache: "fail" });
     document.getElementById("ask-result").innerHTML = `<div class="empty">${cause.message}</div>`;
@@ -306,13 +409,72 @@ async function handleAsk(event) {
 
 document.getElementById("ask-form").addEventListener("submit", handleAsk);
 
+/**
+ * Renders everything below the hero from a (contracts, events, topics) triple.
+ * Called once on initial load with the full static feed, and again on every
+ * live poll tick with the interactive server's fresher — but shorter — event
+ * window, so the metrics, activity feed, and Radar cards stay current without
+ * a page reload. Idempotent: every host is cleared before it's rebuilt.
+ */
+function renderAll({ contracts, events, topics, session = null }) {
+  const contractMap = new Map(contracts.map((c) => [c.id, c]));
+  const topicContractIds = new Set(topics.map((t) => t.contractId));
+
+  // A Radar topic's run/health events land in the same ledger as the
+  // scheduled fleet's — they share one audit trail by design. Keep them out
+  // of the fleet grid (they get their own section) by contract id.
+  const allReports = latestHealth(events);
+  const reports = new Map([...allReports].filter(([contractId]) => !topicContractIds.has(contractId)));
+
+  renderMetrics({ reports, topics, session });
+  renderActivity(events);
+
+  const collectorsHost = document.getElementById("collectors");
+  collectorsHost.innerHTML = "";
+  document.getElementById("fleet-stat").innerHTML = "";
+  if (reports.size === 0 && topics.length === 0) {
+    renderEmpty("Nothing recorded yet.");
+    return;
+  }
+
+  if (reports.size > 0) {
+    renderFleetStat(reports);
+    for (const [contractId, report] of reports) {
+      collectorsHost.append(renderCollectorCard(contractMap.get(contractId), report));
+    }
+  } else {
+    collectorsHost.innerHTML = '<div class="empty">No scheduled collectors yet — every result below came from an ask.</div>';
+  }
+
+  const topicsHost = document.getElementById("topics");
+  topicsHost.innerHTML = "";
+  if (topics.length > 0) {
+    document.getElementById("radar-section").hidden = false;
+    for (const topic of topics) topicsHost.append(renderTopicCard(topic));
+  }
+
+  renderTimeline(events);
+}
+
 // The interactive backend (server.mjs) only ever runs locally — a public page
 // that lets anyone trigger a real scrape would spend your Bright Data credits
 // on strangers. Probe for it rather than assuming; on the static GitHub Pages
-// deployment this request 404s and the ask bar simply stays hidden.
+// deployment this request 404s and the ask bar simply stays hidden, and
+// metrics/activity fall back to the static feed with no live polling.
+let interactive = null;
+let latestFeed = null;
+
+/** Pulls a fresh snapshot from the interactive server and re-renders. No-op on the static deployment. */
+async function refreshLive() {
+  if (!interactive || !latestFeed) return;
+  const session = await fetch("./api/status").then((r) => r.json());
+  renderAll({ contracts: latestFeed.contracts, events: session.events, topics: session.topics, session });
+}
+
 try {
   const health = await fetch("./api/health").then((r) => (r.ok ? r.json() : null));
   if (health?.ok) {
+    interactive = health;
     document.getElementById("ask-form").hidden = false;
     const hint = document.getElementById("ask-hint");
     hint.hidden = false;
@@ -322,44 +484,20 @@ try {
         : "Runs a real query against Bright Data using whatever credentials `bdata login` has stored locally. A brand-new topic bootstraps its own contract on the spot.";
   }
 } catch {
-  // No local server — this is the static deployment. Ask bar stays hidden.
+  // No local server — this is the static deployment.
 }
 
 try {
-  const feed = await loadFeed();
-  const contracts = new Map(feed.contracts.map((c) => [c.id, c]));
-  const topics = feed.topics ?? [];
-  const topicContractIds = new Set(topics.map((t) => t.contractId));
+  latestFeed = await loadFeed();
 
-  // A Radar topic's run/health events land in the same ledger as the scheduled
-  // fleet's — they share one audit trail by design. Keep them out of the fleet
-  // grid here (they get their own section below) by contract id.
-  const allReports = latestHealth(feed.events);
-  const reports = new Map([...allReports].filter(([contractId]) => !topicContractIds.has(contractId)));
+  renderAll({ contracts: latestFeed.contracts, events: latestFeed.events, topics: latestFeed.topics ?? [] });
+  document.getElementById("generated").textContent = `feed generated ${timeOf(latestFeed.generatedAt)}`;
 
-  if (reports.size === 0 && topics.length === 0) {
-    renderEmpty("Nothing recorded yet.");
-  } else {
-    if (reports.size > 0) {
-      renderFleetStat(reports);
-      const host = document.getElementById("collectors");
-      for (const [contractId, report] of reports) {
-        host.append(renderCollectorCard(contracts.get(contractId), report));
-      }
-    } else {
-      document.getElementById("collectors").innerHTML =
-        '<div class="empty">No scheduled collectors yet — every result below came from an ask.</div>';
-    }
-
-    if (topics.length > 0) {
-      document.getElementById("radar-section").hidden = false;
-      const topicsHost = document.getElementById("topics");
-      for (const topic of topics) topicsHost.append(renderTopicCard(topic));
-    }
-
-    renderTimeline(feed.events);
+  if (interactive) {
+    document.getElementById("activity-heading").prepend(el("span", "live-dot"));
+    document.getElementById("timeline-heading").prepend(el("span", "live-dot"));
+    setInterval(() => refreshLive().catch(() => {}), 4000);
   }
-  document.getElementById("generated").textContent = `feed generated ${timeOf(feed.generatedAt)}`;
 } catch (cause) {
   renderEmpty(`No feed found (${cause.message}).`);
 }

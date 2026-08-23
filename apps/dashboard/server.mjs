@@ -2,8 +2,10 @@
 /**
  * Local, interactive Anansi dashboard.
  *
- * Serves the static dashboard and one endpoint — POST /api/ask — that runs a
- * real query through `resolveQuery` and returns the result as JSON. This is
+ * Serves the static dashboard plus three endpoints: POST /api/ask runs a real
+ * query through `resolveQuery`; GET /api/status reports live metrics and the
+ * ledger tail for polling; GET /api/health is what the page probes to decide
+ * whether to show the search bar at all. This is
  * deliberately not what gets deployed to GitHub Pages: a public page with a
  * button that spends your Bright Data credits on anyone's request is a bad
  * idea. This server only ever runs on your own machine, against your own
@@ -35,6 +37,9 @@ const store = new KnowledgeStore(join(root, "data/knowledge"));
 const snapshots = new Snapshots(join(root, "data/snapshots"));
 const ledger = new Ledger(join(root, "data/ledger.jsonl"));
 const contractsDir = join(root, "contracts");
+
+/** In-memory only, since restart: how this server session has actually been used. */
+const stats = { askCount: 0, cacheHits: 0, liveResolves: 0, startedAt: new Date().toISOString() };
 
 const CONTENT_TYPE = {
   ".html": "text/html; charset=utf-8",
@@ -92,6 +97,10 @@ async function handleAsk(req, res) {
       log: (message) => console.log(`  ${message}`),
     });
 
+    stats.askCount += 1;
+    if (result.status === "cache_hit") stats.cacheHits += 1;
+    else stats.liveResolves += 1;
+
     res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(result));
   } catch (cause) {
     console.error(cause);
@@ -99,9 +108,27 @@ async function handleAsk(req, res) {
   }
 }
 
+async function handleStatus(req, res) {
+  try {
+    // The full ledger, not a tail — the client computes each fleet contract's
+    // *latest* health by scanning from the end, same as it does with the
+    // static feed. Truncating here would silently drop a contract's most
+    // recent health event once enough Radar activity pushed it out of a
+    // short window, which reads as the fleet card vanishing mid-poll.
+    const [topics, events] = await Promise.all([store.list(), ledger.read()]);
+    res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ stats, topics, events }));
+  } catch (cause) {
+    res.writeHead(500, { "content-type": "application/json" }).end(JSON.stringify({ error: cause.message }));
+  }
+}
+
 createServer((req, res) => {
   if (req.method === "GET" && req.url === "/api/health") {
     res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ ok: true, mode: replay ? "replay" : "live" }));
+    return;
+  }
+  if (req.method === "GET" && req.url === "/api/status") {
+    handleStatus(req, res);
     return;
   }
   if (req.method === "POST" && req.url === "/api/ask") {

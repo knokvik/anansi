@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T04:23:40.929Z",
+  "generatedAt": "2026-08-23T05:13:19.897Z",
   "contracts": [
     {
       "id": "breakroom-pricing",
@@ -60,254 +60,22 @@
   "events": [
     {
       "kind": "run",
-      "at": "2026-08-23T04:15:28.419Z",
+      "at": "2026-08-23T05:13:19.793Z",
       "contractId": "breakroom-pricing",
       "collectorId": "c_mt59mh6q1omairtns1",
       "rowCount": 5,
-      "durationMs": 5126
+      "durationMs": 19987
     },
     {
       "kind": "health",
-      "at": "2026-08-23T04:15:28.422Z",
+      "at": "2026-08-23T05:13:19.797Z",
       "contractId": "breakroom-pricing",
       "report": {
         "contractId": "breakroom-pricing",
         "collectorId": "c_mt59mh6q1omairtns1",
-        "checkedAt": "2026-08-23T04:15:28.422Z",
+        "checkedAt": "2026-08-23T05:13:19.797Z",
         "rowCount": 5,
         "baselineRowCount": null,
-        "status": "healthy",
-        "score": 1,
-        "fields": [
-          {
-            "field": "model_name",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "Nimbus Titan",
-                "Nimbus Vale",
-                "Nimbus Wisp"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "input_price_usd_per_mtok",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "15",
-                "3",
-                "0.8"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "output_price_usd_per_mtok",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "75",
-                "15",
-                "4"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "context_window_tokens",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "200000",
-                "200000",
-                "200000"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "lifecycle_status",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "GA",
-                "GA",
-                "GA"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          }
-        ],
-        "shapeSymptoms": [],
-        "healRecommended": false
-      }
-    },
-    {
-      "kind": "run",
-      "at": "2026-08-23T04:15:36.020Z",
-      "contractId": "nimbus-ai-model-pricing",
-      "collectorId": "c_mt59mh6q1omairtns1",
-      "rowCount": 5,
-      "durationMs": 0
-    },
-    {
-      "kind": "health",
-      "at": "2026-08-23T04:15:36.023Z",
-      "contractId": "nimbus-ai-model-pricing",
-      "report": {
-        "contractId": "nimbus-ai-model-pricing",
-        "collectorId": "c_mt59mh6q1omairtns1",
-        "checkedAt": "2026-08-23T04:15:36.023Z",
-        "rowCount": 5,
-        "baselineRowCount": null,
-        "status": "healthy",
-        "score": 1,
-        "fields": [
-          {
-            "field": "model_name",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 0.9,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "Nimbus Titan",
-                "Nimbus Vale",
-                "Nimbus Wisp"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "input_price_usd_per_mtok",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 0.9,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "15",
-                "3",
-                "0.8"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "output_price_usd_per_mtok",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 0.9,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "75",
-                "15",
-                "4"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "context_window_tokens",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 0.9,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "200000",
-                "200000",
-                "200000"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "lifecycle_status",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 0.9,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "GA",
-                "GA",
-                "GA"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          }
-        ],
-        "shapeSymptoms": [],
-        "healRecommended": false
-      }
-    },
-    {
-      "kind": "run",
-      "at": "2026-08-23T04:15:41.340Z",
-      "contractId": "breakroom-pricing",
-      "collectorId": "c_mt59mh6q1omairtns1",
-      "rowCount": 5,
-      "durationMs": 5193
-    },
-    {
-      "kind": "health",
-      "at": "2026-08-23T04:15:41.343Z",
-      "contractId": "breakroom-pricing",
-      "report": {
-        "contractId": "breakroom-pricing",
-        "collectorId": "c_mt59mh6q1omairtns1",
-        "checkedAt": "2026-08-23T04:15:41.343Z",
-        "rowCount": 5,
-        "baselineRowCount": 5,
         "status": "healthy",
         "score": 1,
         "fields": [
@@ -407,59 +175,5 @@
       }
     }
   ],
-  "topics": [
-    {
-      "topicKey": "nimbus-ai-model-pricing",
-      "query": "nimbus ai model pricing",
-      "contractId": "nimbus-ai-model-pricing",
-      "collectorId": "c_mt59mh6q1omairtns1",
-      "rows": [
-        {
-          "model_name": "Nimbus Titan",
-          "input_price_usd_per_mtok": 15,
-          "output_price_usd_per_mtok": 75,
-          "context_window_tokens": 200000,
-          "lifecycle_status": "GA"
-        },
-        {
-          "model_name": "Nimbus Vale",
-          "input_price_usd_per_mtok": 3,
-          "output_price_usd_per_mtok": 15,
-          "context_window_tokens": 200000,
-          "lifecycle_status": "GA"
-        },
-        {
-          "model_name": "Nimbus Wisp",
-          "input_price_usd_per_mtok": 0.8,
-          "output_price_usd_per_mtok": 4,
-          "context_window_tokens": 200000,
-          "lifecycle_status": "GA"
-        },
-        {
-          "model_name": "Nimbus Cirrus",
-          "input_price_usd_per_mtok": 1.1,
-          "output_price_usd_per_mtok": 5.5,
-          "context_window_tokens": 128000,
-          "lifecycle_status": "Deprecated 2026-11-01"
-        },
-        {
-          "model_name": "Nimbus Strato",
-          "input_price_usd_per_mtok": 6.4,
-          "output_price_usd_per_mtok": 32,
-          "context_window_tokens": 400000,
-          "lifecycle_status": "Preview"
-        }
-      ],
-      "identityField": "model_name",
-      "freshnessClass": "volatile",
-      "ttlSeconds": 21600,
-      "lastConfirmedFresh": "2026-08-23T04:15:36.028Z",
-      "standing": false,
-      "askCount": 1,
-      "tier": "discovery",
-      "escalatedCount": 0,
-      "lastStatus": "healthy",
-      "lastScore": 1
-    }
-  ]
+  "topics": []
 }
