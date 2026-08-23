@@ -16,6 +16,40 @@ Same `c_*` Collector ID throughout. Nothing downstream is ever repointed.
 
 ---
 
+## Proof, not a demo
+
+Everything below actually happened, against a real Bright Data collector —
+[`c_mt59mh6q1omairtns1`](https://brightdata.com/cp/scrapers/c_mt59mh6q1omairtns1),
+created with `bdata scraper create` against
+[the Break Room](https://knokvik.github.io/anansi/), a target page this
+repository controls:
+
+1. **It broke.** The Break Room's layout flipped from a table (`v1`) to a card
+   grid (`v2`) — same data, different markup. The collector, built against
+   `v1`, came back empty.
+2. **A bad fix got rejected.** The auto-generated heal prompt — assembled from
+   the contract's own field descriptions, no human involved — didn't specify
+   what actually changed. `bdata scraper heal` proposed a fix; the gate
+   re-scored the preview, found the targeted fields still empty, and called
+   `bdata scraper approve --reject`. Nothing was saved.
+3. **A specific fix got approved.** A prompt describing the real change (card
+   grid, `data-test` attributes) produced a working fix. The gate re-scored
+   it, confirmed every field recovered with no regressions, and approved it
+   for real.
+4. **It's verified, live, right now.** `anansi watch` scores the same
+   contract against the same Collector ID at **1.00** — 5/5 fields, 5/5 rows —
+   against the redesigned page. Nothing downstream was ever repointed.
+
+Reproduce it yourself: `pnpm anansi watch --contract breakroom-pricing`
+(needs `bdata login`) — or see it without any credentials at all via
+`pnpm anansi watch --replay ./fixtures`.
+
+Three real bugs surfaced only by doing this — not by unit testing alone — and
+are documented, root-caused, and fixed in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#what-phase-1-actually-taught-us).
+
+---
+
 ## The problem
 
 A scraper does not fail loudly. When a site renames a class or moves a field, the
@@ -65,6 +99,40 @@ breakage and calls `bdata scraper approve --reject` when the fix:
 - leaves a targeted field empty,
 - repairs its target but breaks a field that was previously healthy, or
 - does not improve the contract score at all.
+
+## Radar — ask on demand
+
+The engine above runs on a schedule, against contracts someone wrote ahead of
+time. Radar puts a question in front of it instead:
+
+```bash
+pnpm anansi ask "nimbus ai model pricing" --url <url> --collector <c_id>
+```
+
+- **Cache first, always.** A repeat ask inside its freshness window is served
+  from disk — zero network calls, zero credits. Verified: the second identical
+  `ask` above makes no `bdata` call at all.
+- **A new topic bootstraps its own contract.** No YAML to write first: the
+  first successful run infers field types and required-ness from what it
+  actually returned, and that becomes the standard every later run is held to.
+  Self-healing without anyone hand-authoring a schema.
+- **What's new, not just what exists.** Every re-check diffs against the last
+  known-good snapshot by identity key and reports new / changed / removed
+  rows — `detectNovelty` in `packages/core`.
+- **The re-check interval learns.** A topic that keeps coming back unchanged
+  has its TTL widened; one that's moving fast gets narrowed — `adjustTtl`,
+  driven by the same novelty signal, not a fixed schedule.
+- **Not scheduled just for existing.** A bootstrapped topic shares the fleet's
+  `contracts/` directory but stays out of the unattended nightly sweep until
+  it's been asked more than once (`KnowledgeEntry.standing`).
+
+Try it interactively: `pnpm dashboard:replay` (no credentials) or
+`pnpm dashboard` (live) opens a real search bar at `localhost:4322` — type a
+question, watch the pipeline (cache → scrape → score → heal → done), see the
+result. This only ever runs locally; see [Quick start](#quick-start).
+
+Full design, including the cost-tiered escalation logic that's built and
+tested but not yet wired to a live second scraper tier: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Quick start
 
@@ -131,12 +199,14 @@ extracting stopped for exactly one reason. See [apps/breakroom/README.md](apps/b
 
 ```
 packages/core/         contracts, health scoring, heal-prompt synthesis, the gate,
-                       the supervisor loop, the ledger - pure, no I/O, unit tested
+                       the supervisor loop, the ledger, novelty diffing, Radar's
+                       bootstrap/freshness/escalation logic - pure, no I/O, unit tested
 apps/cli/              the `anansi` binary and the Bright Data CLI adapter
-apps/dashboard/        static dashboard rendered from the ledger feed
+apps/dashboard/        the dashboard - a static feed on GitHub Pages, or interactive
+                       (server.mjs) with a real search bar when run locally
 apps/breakroom/        the controllable target page
 contracts/             one *.contract.yaml per collector
-fixtures/              recorded envelopes for credential-free replay
+fixtures/              a hand-authored illustrative example for credential-free replay
 ```
 
 `packages/core` never touches the network. The supervisor talks to a `ScraperClient`

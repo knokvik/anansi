@@ -209,9 +209,11 @@ collector. A bootstrapped topic writes into the same `contracts/` directory
 the scheduled fleet reads from, but stays out of an unattended sweep until
 `KnowledgeEntry.standing` — asked more than once — says otherwise.
 
-**What Phase 1 actually taught us.** Three real bugs only showed up by
-genuinely breaking the live collector and running the full loop against it —
-none of them were things unit tests alone would have caught:
+### What Phase 1 actually taught us
+
+Three real bugs only showed up by genuinely breaking the live collector and
+running the full loop against it — none of them were things unit tests alone
+would have caught:
 
 - Bright Data's Discovery envelope for a single page nests the real item list
   inside an unpredictable field name (`[{ models: [...] }]`), not a flat
