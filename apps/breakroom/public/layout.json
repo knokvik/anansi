@@ -1,4 +1,4 @@
 {
-  "layout": "v1",
-  "description": "table layout, class-based selectors"
+  "layout": "v2",
+  "description": "card grid, data-test attributes, split price nodes"
 }
