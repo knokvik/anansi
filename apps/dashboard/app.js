@@ -182,7 +182,7 @@ function relativeTime(iso) {
   return ms >= 0 ? `${unit[0]}${unit[1]} ago` : `in ${unit[0]}${unit[1]}`;
 }
 
-function renderTopicCard(topic) {
+function renderTopicCard(topic, novelty = null) {
   const card = el("div", "card");
   const status = topic.lastStatus ?? "healthy";
 
@@ -217,13 +217,112 @@ function renderTopicCard(topic) {
 
   const rowList = el("div", "row-list");
   for (const row of topic.rows.slice(0, 8)) {
-    const identity = String(row[topic.identityField] ?? "");
-    rowList.append(el("div", "row-item", `${identity} — ${JSON.stringify(row).slice(0, 140)}`));
+    const identity = String(row[topic.identityField] ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    const change = novelty?.changes.find((c) => c.identity === identity);
+    const item = el("div", `row-item ${change?.kind ?? ""}`);
+    if (change) item.append(el("span", "rowbadge", change.kind.toUpperCase()));
+    item.append(document.createTextNode(`${identity} — ${JSON.stringify(row).slice(0, 140)}`));
+    if (change?.deltas) {
+      for (const delta of change.deltas) {
+        item.append(el("span", "row-delta", `${delta.field}: ${JSON.stringify(delta.from)} → ${JSON.stringify(delta.to)}`));
+      }
+    }
+    rowList.append(item);
   }
   body.append(rowList);
 
+  if (novelty && !novelty.isBaseline) {
+    body.append(
+      el(
+        "div",
+        "novelty-summary",
+        `${novelty.newCount} new · ${novelty.changedCount} changed · ${novelty.unchangedCount} unchanged`,
+      ),
+    );
+  }
+
   card.append(head, body);
   return card;
+}
+
+const PIPE_STAGES = ["cache", "scrape", "score", "heal", "done"];
+
+function setPipeline(states) {
+  const host = document.getElementById("pipeline");
+  host.hidden = false;
+  for (const stage of PIPE_STAGES) {
+    const node = host.querySelector(`[data-stage="${stage}"]`);
+    node.className = `pipe-stage ${states[stage] ?? ""}`;
+  }
+}
+
+/** Coarse, honest stage summary derived from the real result — not simulated timing. */
+function pipelineForResult(status) {
+  switch (status) {
+    case "cache_hit":
+      return { cache: "done", scrape: "skip", score: "skip", heal: "skip", done: "done" };
+    case "bootstrapped":
+      return { cache: "done", scrape: "done", score: "done", heal: "skip", done: "done" };
+    case "refreshed":
+      return { cache: "done", scrape: "done", score: "done", heal: "done", done: "done" };
+    case "refresh_failed":
+      return { cache: "done", scrape: "done", score: "done", heal: "fail", done: "fail" };
+    default:
+      return { cache: "done", scrape: "done", score: "done", heal: "done", done: "done" };
+  }
+}
+
+async function handleAsk(event) {
+  event.preventDefault();
+  const input = document.getElementById("ask-input");
+  const submit = document.getElementById("ask-submit");
+  const query = input.value.trim();
+  if (!query) return;
+
+  submit.disabled = true;
+  document.getElementById("ask-result").innerHTML = "";
+  setPipeline({ cache: "active" });
+
+  try {
+    const response = await fetch("./api/ask", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query }),
+    });
+    const result = await response.json();
+
+    if (!response.ok) throw new Error(result.error ?? `request failed (${response.status})`);
+
+    setPipeline(pipelineForResult(result.status));
+    const host = document.getElementById("ask-result");
+    host.append(renderTopicCard(result.entry, result.novelty));
+  } catch (cause) {
+    setPipeline({ cache: "fail" });
+    document.getElementById("ask-result").innerHTML = `<div class="empty">${cause.message}</div>`;
+  } finally {
+    submit.disabled = false;
+  }
+}
+
+document.getElementById("ask-form").addEventListener("submit", handleAsk);
+
+// The interactive backend (server.mjs) only ever runs locally — a public page
+// that lets anyone trigger a real scrape would spend your Bright Data credits
+// on strangers. Probe for it rather than assuming; on the static GitHub Pages
+// deployment this request 404s and the ask bar simply stays hidden.
+try {
+  const health = await fetch("./api/health").then((r) => (r.ok ? r.json() : null));
+  if (health?.ok) {
+    document.getElementById("ask-form").hidden = false;
+    const hint = document.getElementById("ask-hint");
+    hint.hidden = false;
+    hint.textContent =
+      health.mode === "replay"
+        ? "Replay mode: every query returns the Break Room dataset regardless of what you type — no credentials needed."
+        : "Runs a real query against Bright Data using whatever credentials `bdata login` has stored locally. A brand-new topic bootstraps its own contract on the spot.";
+  }
+} catch {
+  // No local server — this is the static deployment. Ask bar stays hidden.
 }
 
 try {

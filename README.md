@@ -81,11 +81,17 @@ pnpm anansi watch --replay ./fixtures
 pnpm anansi report
 ```
 
-Then open the dashboard:
+Then open the dashboard — a live, queryable one, not just a static read of the feed:
 
 ```bash
-python3 -m http.server 4322 -d apps/dashboard
+pnpm dashboard:replay   # search bar works too; every query returns the Break Room dataset
 ```
+
+Open http://localhost:4322 and type a question into the search bar — e.g. `nimbus ai model pricing`.
+The interactive server only ever runs on your own machine: a public page with a button
+that spends someone else's Bright Data credits on a stranger's query is a bad idea, so
+this never gets deployed. `apps/dashboard/feed.json` (the static, pre-generated snapshot)
+is what ships to GitHub Pages instead.
 
 **Against live collectors**, once you have authenticated:
 
@@ -93,6 +99,8 @@ python3 -m http.server 4322 -d apps/dashboard
 npx -p @brightdata/cli bdata login
 pnpm anansi check     # detect and report; never spends credits on a heal
 pnpm anansi watch     # detect, heal, gate, verify
+pnpm dashboard        # same interactive dashboard, now against real Bright Data
+pnpm anansi ask "nimbus ai model pricing" --url <url> --collector <c_id>  # a new topic, bootstrapped on the spot
 ```
 
 ## Commands

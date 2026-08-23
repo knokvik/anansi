@@ -1,8 +1,10 @@
 # Anansi Radar — abstract and architecture
 
-Status: design, not yet built. This document is the blueprint for extending the
-self-healing engine in `packages/core` (already built and tested) into an
-on-demand, query-driven product.
+Status: Phase 1 is built, tested, and verified against the live collector —
+`anansi ask` and the interactive dashboard (`pnpm dashboard`) both work end to
+end. This document is also the record of what changed once real infrastructure
+disagreed with the design: see the "What Phase 1 actually taught us" note at
+the end of the Build sequence.
 
 ## Abstract
 
@@ -196,14 +198,43 @@ changes earns a longer TTL on its own.
 the approval gate, the supervisor loop, the ledger, novelty diffing, the CLI,
 the Break Room demo target, the dashboard, CI.
 
-**Phase 1 — today's scope.** Query Planner (simple: normalize + hash the ask
-into a topic key, no NLP needed for the demo), a JSON-file Knowledge Store
-(same shape as `Snapshots`, extended with freshness metadata), a static
-freshness-class table, the Bootstrap Contract Synthesizer, and one end-to-end
-demo query wired through the existing loop. Ships as a thin layer on top of
-`packages/core` — nothing already built gets rewritten.
+**Phase 1 — done.** Query Planner (`planTopicKey`: normalize + slugify the
+ask), a JSON-file Knowledge Store, a static freshness-class table with the
+Freshness Learner (`adjustTtl`) adjusting it from real novelty history, the
+Bootstrap Contract Synthesizer, the Cost-Tiered Escalator's decision logic
+(`planEscalation` — tested, not yet wired to a second live scraper tier), and
+`resolveQuery` tying it together. `anansi ask "<query>"` and the interactive
+dashboard (`pnpm dashboard`) both run it end to end against the live
+collector. A bootstrapped topic writes into the same `contracts/` directory
+the scheduled fleet reads from, but stays out of an unattended sweep until
+`KnowledgeEntry.standing` — asked more than once — says otherwise.
 
-**Phase 2 — roadmap, not today.** Adaptive TTL from observed novelty rates,
-a real query planner (LLM-assisted topic decomposition, multi-source fan-out),
-a hosted knowledge store instead of JSON files, and popularity-based
-promotion into the nightly sentinel sweep.
+**What Phase 1 actually taught us.** Three real bugs only showed up by
+genuinely breaking the live collector and running the full loop against it —
+none of them were things unit tests alone would have caught:
+
+- Bright Data's Discovery envelope for a single page nests the real item list
+  inside an unpredictable field name (`[{ models: [...] }]`), not a flat
+  array — the payload parser was flattening it into one meaningless row.
+- A heal's approval-gate preview is itself a *summary*, not a full run —
+  observed live: a 5-row result truncated to 2 full rows plus a literal
+  `"3 more items"` string mixed into the array. Judging that preview against
+  the contract's real `shape.minRows` rejected a genuinely correct fix for
+  looking short. The gate now scores a preview purely on field correctness;
+  the real row count is still fully enforced by the verification run that
+  follows an approval.
+- The Bootstrap Contract Synthesizer's integer detection stripped non-digit
+  characters before parsing — for all-text values like `"Nimbus Titan"` that
+  leaves `""`, and `Number("")` is `0`, a valid integer. Every plain-text
+  field in a bootstrapped contract was silently typed as `integer`.
+
+The lesson generalizes: a system whose whole premise is "verify against
+reality, don't trust the happy path" has to be built the same way. Replaying
+fixtures proves the *logic*; only running against the real collector — and
+deliberately breaking it — proved the *parsing*.
+
+**Phase 2 — roadmap, not today.** Wiring the Cost-Tiered Escalator to an
+actual second scraper tier (needs a target with real list + detail pages —
+the Break Room is single-page), a real query planner (LLM-assisted topic
+decomposition, multi-source fan-out), a hosted knowledge store instead of
+JSON files, and popularity-based promotion into the nightly sentinel sweep.

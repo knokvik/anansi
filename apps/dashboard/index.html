@@ -34,6 +34,26 @@
     <strong>all against the same Collector ID</strong>, so nothing downstream is ever repointed.
   </p>
 
+  <form id="ask-form" class="ask-bar" autocomplete="off" hidden>
+    <input id="ask-input" type="text" placeholder="Ask a question — e.g. nimbus ai model pricing" required>
+    <button type="submit" id="ask-submit">Ask</button>
+  </form>
+  <p class="ask-hint" id="ask-hint" hidden></p>
+
+  <div class="pipeline" id="pipeline" hidden>
+    <div class="pipe-stage" data-stage="cache">cache check</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage" data-stage="scrape">scraping</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage" data-stage="score">scoring</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage" data-stage="heal">healing</div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-stage" data-stage="done">done</div>
+  </div>
+
+  <div id="ask-result"></div>
+
   <div class="grid" id="collectors"></div>
 
   <div id="radar-section" hidden>

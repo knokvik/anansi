@@ -13,7 +13,8 @@
     "test": "pnpm --filter @anansi/core test && pnpm --filter @anansi/cli test",
     "typecheck": "pnpm -r typecheck",
     "anansi": "pnpm --filter @anansi/cli exec anansi",
-    "dashboard": "pnpm --filter @anansi/web dev",
+    "dashboard": "node apps/dashboard/server.mjs",
+    "dashboard:replay": "node apps/dashboard/server.mjs --replay",
     "breakroom": "node scripts/serve-breakroom.mjs"
   },
   "devDependencies": {
