@@ -296,8 +296,14 @@ export function initCloudShader(canvas, options = {}) {
   };
 }
 
-/** Daylight sky for light mode, dusk for dark — the hero should match the page it sits on. */
+/**
+ * A bright daylight sky, used in both themes.
+ *
+ * The hero deliberately does not follow the dark theme: a dusk palette made
+ * the landing read as heavy and closed, and this is the first thing anyone
+ * sees. The dashboard behind it still themes normally.
+ */
 export const CLOUD_PALETTES = {
-  light: { cloudColor: "#fbf8f2", skyTopColor: "#3876ba", skyBottomColor: "#8cbfe8" },
-  dark: { cloudColor: "#c9c4e8", skyTopColor: "#0b0a1f", skyBottomColor: "#3d3566" },
+  light: { cloudColor: "#dbe8f6", skyTopColor: "#4a93d8", skyBottomColor: "#a9d3f0" },
+  dark: { cloudColor: "#dbe8f6", skyTopColor: "#4a93d8", skyBottomColor: "#a9d3f0" },
 };

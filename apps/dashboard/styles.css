@@ -73,6 +73,9 @@
    is set. Force it — every view toggle on this page relies on `hidden`. */
 [hidden] { display: none !important; }
 
+/* Set while the landing is showing, so the cloud is a single fixed screen. */
+body.no-scroll { overflow: hidden; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -116,23 +119,31 @@ header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-s
 .thesis strong { color: var(--fg); font-weight: 600; }
 
 /* ---------- landing ---------- */
-.landing { position: relative; min-height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+/* Exactly one screen, never scrolls — the cloud is the whole landing. */
+.landing { position: relative; height: 100vh; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 .cloud-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-/* Fallback ground so the hero is never a blank rectangle if WebGL is unavailable. */
-.landing { background: linear-gradient(180deg, #3876ba, #8cbfe8); }
-:root[data-theme="dark"] .landing { background: linear-gradient(180deg, #0b0a1f, #3d3566); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .landing { background: linear-gradient(180deg, #0b0a1f, #3d3566); } }
+/* Fallback ground so the hero is never a blank rectangle if WebGL is unavailable.
+   Daylight in both themes, matching CLOUD_PALETTES. */
+.landing { background: linear-gradient(180deg, #4a93d8, #a9d3f0); }
 
-.landing-scrim {
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(180deg, rgba(8,10,20,.34) 0%, rgba(8,10,20,.10) 34%, rgba(8,10,20,.52) 100%);
-}
+/* No scrim: the shader's own brightness is the point, and any dark wash over
+   it read as muddy. Legibility is carried entirely by layered text-shadows on
+   the hero copy instead — a tight dark shadow for edge contrast against a
+   bright cloud, plus a wide soft one to separate text from the sky. */
 
 .landing-nav {
   position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between;
   gap: 20px; padding: 24px clamp(20px, 5vw, 56px);
 }
-.landing-brand { color: #fff; font-size: 19px; font-weight: 650; letter-spacing: -.02em; gap: 11px; text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+/* Mark and wordmark sized to share an optical height: the 27px glyph and the
+   23px cap-height read as one unit rather than an icon with a label. */
+.landing-brand {
+  color: #fff; font-size: 23px; font-weight: 660; letter-spacing: -.025em; gap: 10px;
+  text-shadow: 0 1px 5px rgba(6,18,38,.3);
+}
+/* line-height:1 collapses the wordmark's line box to its cap height, so it
+   optically matches the 27px mark instead of sitting in a taller box. */
+.landing-brand span { line-height: 1; }
 
 .btn-launch {
   display: inline-flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px;
@@ -145,34 +156,50 @@ header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-s
 .btn-launch:hover { background: rgba(255,255,255,.26); border-color: rgba(255,255,255,.5); }
 .btn-launch:active { transform: scale(.97); }
 
+/* The extra bottom padding lifts the copy off the low cloud layer and into the
+   clear blue band above it, which is what makes the text readable without
+   dimming the sky. */
 .landing-hero {
   position: relative; z-index: 2; flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center; text-align: center;
-  padding: 40px clamp(20px, 6vw, 64px) 80px; color: #fff;
+  padding: 40px clamp(20px, 6vw, 64px) clamp(80px, 26vh, 240px); color: #fff;
 }
+/* Light shadows only. The copy now sits in the clear blue band above the
+   cloud layer, so it needs just enough edge definition to separate from the
+   sky — anything heavier reads as a drop-shadow effect rather than clean type. */
 .eyebrow {
-  margin: 0 0 22px; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
-  color: rgba(255,255,255,.82); font-weight: 600;
+  margin: 0 0 12px; font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+  color: #fff; font-weight: 700;
+  text-shadow: 0 1px 4px rgba(4,14,32,.32);
 }
 .landing-hero h1 {
   margin: 0; font-size: clamp(34px, 6vw, 64px); line-height: 1.08; letter-spacing: -.035em;
-  font-weight: 680; max-width: 17ch; text-shadow: 0 2px 30px rgba(0,0,0,.3);
+  font-weight: 680; max-width: 17ch;
+  text-shadow: 0 2px 12px rgba(4,14,32,.22);
 }
+
+/* Deliberately not centred-narrow like the headline: at hero width a centred
+   block of body copy reads as a pull-quote. Wider measure, smaller type, and
+   normal weight put it back to being a subtitle. */
 .lede {
-  margin: 26px 0 0; max-width: 62ch; font-size: clamp(15px, 1.7vw, 17.5px); line-height: 1.6;
-  color: rgba(255,255,255,.9); text-shadow: 0 1px 16px rgba(0,0,0,.3);
+  margin: 18px auto 0; max-width: 74ch; font-size: clamp(14.5px, 1.5vw, 16.5px); line-height: 1.55;
+  color: #fff; font-weight: 500;
+  text-shadow: 0 1px 5px rgba(4,14,32,.34);
 }
-.btn-hero { margin-top: 36px; padding: 14px 26px; font-size: 15.5px; background: rgba(255,255,255,.94); color: #14121f; border-color: transparent; }
-.btn-hero:hover { background: #fff; border-color: transparent; }
-.proof-line { margin: 26px 0 0; font-size: 12.5px; color: rgba(255,255,255,.78); }
-.proof-line code { font-family: var(--mono); background: rgba(255,255,255,.16); padding: 2px 7px; border-radius: 5px; }
 
-/* ---------- features ---------- */
-.features { background: var(--bg); padding: clamp(64px, 9vw, 108px) 24px; }
-.features-inner { max-width: 1180px; margin: 0 auto; }
-.features-title { margin: 0; font-size: clamp(26px, 3.4vw, 38px); letter-spacing: -.03em; font-weight: 680; }
-.features-sub { margin: 12px 0 44px; color: var(--muted); font-size: 15.5px; max-width: 64ch; }
+.proof-line {
+  margin: 22px 0 0; font-size: 13px; color: #fff; font-weight: 500;
+  text-shadow: 0 1px 5px rgba(4,14,32,.34);
+}
+.proof-line a {
+  display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 600;
+  text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.45); padding-bottom: 1px;
+  transition: border-color .15s;
+}
+.proof-line a:hover { border-color: #fff; }
+.proof-line a svg { width: 14px; height: 14px; }
 
+/* ---------- features (inside the dashboard) ---------- */
 .feature-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
 .feature {
   background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px 22px 24px;

@@ -42,7 +42,11 @@ const timeOf = (iso) =>
   });
 
 /* ---------- cloud shader hero ---------- */
-const cloud = initCloudShader(document.getElementById("cloud-canvas"));
+// count: 2 draws only the two lowest cloud layers. The mid-layer clouds sit
+// exactly where the hero copy does, and white text over a lit cloud is
+// unreadable no matter how heavy the shadow — so the band behind the text is
+// left as open sky instead of being dimmed by an overlay.
+const cloud = initCloudShader(document.getElementById("cloud-canvas"), { count: 2 });
 
 /* ---------- theme ---------- */
 const isDarkTheme = () => {
@@ -84,27 +88,30 @@ initTheme();
 /* ---------- landing <-> dashboard ---------- */
 function showDashboard() {
   document.getElementById("landing").hidden = true;
-  document.getElementById("features").hidden = true;
   document.getElementById("dashboard").hidden = false;
   // The composer is the dashboard's input; it stays hidden unless the local
   // interactive server answered the /api/health probe further down.
   document.getElementById("composer-dock").hidden = !interactive;
+  document.body.classList.remove("no-scroll");
   window.scrollTo(0, 0);
   history.replaceState(null, "", "#dashboard");
 }
 
 function showLanding() {
   document.getElementById("landing").hidden = false;
-  document.getElementById("features").hidden = false;
   document.getElementById("dashboard").hidden = true;
   document.getElementById("composer-dock").hidden = true;
+  // The landing is exactly one screen; nothing below it should be reachable.
+  document.body.classList.add("no-scroll");
   window.scrollTo(0, 0);
   history.replaceState(null, "", "#");
 }
 
 document.getElementById("launch-dashboard").addEventListener("click", showDashboard);
-document.getElementById("launch-dashboard-hero").addEventListener("click", showDashboard);
 document.getElementById("back-home").addEventListener("click", showLanding);
+
+// Landing is the default view, so lock scrolling until the dashboard opens.
+document.body.classList.add("no-scroll");
 
 async function loadFeed() {
   const response = await fetch("./feed.json", { cache: "no-store" });
