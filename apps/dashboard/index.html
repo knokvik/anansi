@@ -39,11 +39,11 @@
   <div class="landing-hero">
     <p class="eyebrow">Bright Data Scraper Studio · Into the Scrape-Verse</p>
     <h1>Scrapers don't fail loudly.<br>They just quietly stop being true.</h1>
-    <p class="lede">
+    <!-- <p class="lede">
       A site renames one class and your scraper keeps returning the right shape of data with
       nothing inside it. Anansi scores every run against a contract, writes its own repair
       prompt, and refuses any fix that doesn't measurably hold — all on the same Collector ID.
-    </p>
+    </p> -->
     <p class="proof-line">
       Created by
       <a href="https://github.com/knokvik/anansi" target="_blank" rel="noopener noreferrer">
@@ -100,6 +100,60 @@
   <div id="ask-result"></div>
 
   <div class="metrics-grid" id="metrics-grid"></div>
+
+  <h3 class="section">How it works</h3>
+  <p class="thesis radar">
+    Bright Data's Scraper Studio can <em>repair</em> a broken scraper from a prompt. It can't notice the
+    break, write that prompt, or check the fix held — that's a person, today. Anansi is that loop.
+    Every stage below runs on the <strong>same Collector ID</strong>, so nothing downstream is ever repointed.
+  </p>
+
+  <div class="flow">
+    <article class="flow-step">
+      <div class="s-num">1</div>
+      <h4>Run</h4>
+      <p>The collector runs against its canary URLs through the Bright Data CLI — the same <code>bdata scraper run</code> you'd type yourself.</p>
+    </article>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <article class="flow-step">
+      <div class="s-num">2</div>
+      <h4>Score</h4>
+      <p>Output is graded 0–1 against the contract: fill rate per field, type conformance, and whether the row count collapsed.</p>
+    </article>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <article class="flow-step">
+      <div class="s-num">3</div>
+      <h4>Diagnose</h4>
+      <p>If it's broken, the repair prompt is written from the contract's own plain-language field descriptions — not improvised.</p>
+    </article>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <article class="flow-step">
+      <div class="s-num">4</div>
+      <h4>Heal</h4>
+      <p><code>bdata scraper heal</code> proposes a fix and parks at the approval gate. Nothing is saved yet.</p>
+    </article>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <article class="flow-step accent">
+      <div class="s-num">5</div>
+      <h4>Gate</h4>
+      <p>The proposal is re-scored against that same contract. If it doesn't repair what broke — or breaks something healthy — it's rejected, not saved.</p>
+    </article>
+    <div class="flow-arrow" aria-hidden="true">→</div>
+    <article class="flow-step">
+      <div class="s-num">6</div>
+      <h4>Verify</h4>
+      <p>A fresh run must independently pass before it counts as healed. Every decision lands in the ledger below.</p>
+    </article>
+  </div>
+
+  <h3 class="section">Reading this dashboard</h3>
+  <div class="legend">
+    <div class="legend-item"><span class="l-key">Metrics</span><span>Fleet size, average contract score, and — when the local server is running — live cache-hit rate for this session.</span></div>
+    <div class="legend-item"><span class="l-key">Collector cards</span><span>One per scheduled collector: its score, per-field fill rates, and any symptoms detected on the last run.</span></div>
+    <div class="legend-item"><span class="l-key">Radar</span><span>Topics resolved from a plain-language question rather than a schedule, each with a freshness window and TTL.</span></div>
+    <div class="legend-item"><span class="l-key">Scraper activity</span><span>The most recent things the system actually did, newest first.</span></div>
+    <div class="legend-item"><span class="l-key">Decision log</span><span>The full audit trail — including the verbatim heal prompt and the gate's reasoning for every approve or reject.</span></div>
+  </div>
 
   <h3 class="section">What's built</h3>
   <p class="thesis radar">Every capability below runs today — verified against live Bright Data infrastructure, not mocked.</p>

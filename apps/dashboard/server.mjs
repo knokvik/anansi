@@ -64,8 +64,11 @@ async function readBody(req) {
 }
 
 async function serveStatic(req, res) {
-  const path = req.url === "/" ? "index.html" : req.url.split("?")[0].replace(/^\//, "");
-  const filePath = join(here, path);
+  // Strip the query before deciding what the path is: `/?v=123` is still the
+  // root, and testing `req.url === "/"` first sent any cache-busted root
+  // request to a 404.
+  const pathname = req.url.split("?")[0].replace(/^\//, "");
+  const filePath = join(here, pathname === "" ? "index.html" : pathname);
   if (!filePath.startsWith(here)) {
     res.writeHead(403).end("forbidden");
     return;

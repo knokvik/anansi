@@ -93,7 +93,12 @@ body {
 /* ---------- header ---------- */
 header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
 .brand { display: flex; align-items: center; gap: 14px; }
-.brand svg { flex: none; }
+.brand svg { flex: none; animation: spin-logo 20s linear infinite; }
+
+@keyframes spin-logo {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 .brand h1 { font-size: 26px; margin: 0; letter-spacing: -0.03em; font-weight: 680; }
 .brand p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
 
@@ -175,7 +180,7 @@ header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-s
 .landing-hero h1 {
   margin: 0; font-size: clamp(34px, 6vw, 64px); line-height: 1.08; letter-spacing: -.035em;
   font-weight: 680; max-width: 17ch;
-  text-shadow: 0 2px 12px rgba(4,14,32,.22);
+  text-shadow: 0 1px 1px rgba(4,14,32,.22);
 }
 
 /* Deliberately not centred-narrow like the headline: at hero width a centred
@@ -184,7 +189,7 @@ header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-s
 .lede {
   margin: 18px auto 0; max-width: 74ch; font-size: clamp(14.5px, 1.5vw, 16.5px); line-height: 1.55;
   color: #fff; font-weight: 500;
-  text-shadow: 0 1px 5px rgba(4,14,32,.34);
+  text-shadow: 0 1px 1px rgba(4,14,32,.34);
 }
 
 .proof-line {
@@ -198,6 +203,41 @@ header.masthead { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-s
 }
 .proof-line a:hover { border-color: #fff; }
 .proof-line a svg { width: 14px; height: 14px; }
+
+/* ---------- how it works ---------- */
+.flow {
+  display: grid; gap: 10px; align-items: stretch; margin-bottom: 8px;
+  grid-template-columns: repeat(6, 1fr) ;
+}
+/* The arrows are decorative connectors; they collapse away before the steps do. */
+.flow-arrow { display: none; }
+
+.flow-step {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 12px;
+  padding: 16px 16px 18px; box-shadow: var(--shadow);
+}
+.flow-step.accent { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: var(--accent-soft); }
+.s-num {
+  display: flex; align-items: center; justify-content: center; width: 22px; height: 22px;
+  border-radius: 99px; background: var(--accent); color: var(--accent-ink);
+  font-family: var(--mono); font-size: 11px; font-weight: 700; margin-bottom: 10px;
+}
+.flow-step h4 { margin: 0 0 6px; font-size: 14px; font-weight: 640; letter-spacing: -.01em; }
+.flow-step p { margin: 0; font-size: 12.8px; line-height: 1.55; color: var(--muted); }
+.flow-step code { font-family: var(--mono); font-size: 11.5px; background: var(--panel-2); padding: 1px 5px; border-radius: 4px; }
+
+@media (max-width: 1100px) { .flow { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 640px)  { .flow { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- dashboard legend ---------- */
+.legend { display: grid; gap: 8px; }
+.legend-item {
+  display: grid; grid-template-columns: 150px 1fr; gap: 14px; align-items: baseline;
+  padding: 11px 16px; background: var(--panel); border: 1px solid var(--line);
+  border-radius: 10px; font-size: 13px; color: var(--muted);
+}
+.legend-item .l-key { font-weight: 640; color: var(--fg); }
+@media (max-width: 640px) { .legend-item { grid-template-columns: 1fr; gap: 3px; } }
 
 /* ---------- features (inside the dashboard) ---------- */
 .feature-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); }
