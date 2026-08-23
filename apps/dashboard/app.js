@@ -5,6 +5,15 @@
  * over decisions that already happened — it never re-derives health itself.
  */
 
+import { CLOUD_PALETTES, initCloudShader } from "./cloud-shader.js";
+
+/**
+ * Set once the local interactive server answers /api/health. Declared up here
+ * because the landing's Launch button reads it to decide whether to show the
+ * composer, and that listener is wired before the probe resolves.
+ */
+let interactive = null;
+
 const VERDICT_MARK = { healthy: "✓", degraded: "~", broken: "✗", missing: "✗" };
 const VERDICT_COLOR = {
   healthy: "var(--ok)",
@@ -32,27 +41,31 @@ const timeOf = (iso) =>
     second: "2-digit",
   });
 
+/* ---------- cloud shader hero ---------- */
+const cloud = initCloudShader(document.getElementById("cloud-canvas"));
+
 /* ---------- theme ---------- */
+const isDarkTheme = () => {
+  const forced = document.documentElement.getAttribute("data-theme");
+  if (forced) return forced === "dark";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+};
+
 function initTheme() {
   const root = document.documentElement;
   const sun = document.getElementById("theme-icon-sun");
   const moon = document.getElementById("theme-icon-moon");
   const toggle = document.getElementById("theme-toggle");
 
-  const isDark = () => {
-    const forced = root.getAttribute("data-theme");
-    if (forced) return forced === "dark";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  };
-
   const sync = () => {
-    const dark = isDark();
+    const dark = isDarkTheme();
     sun.hidden = dark;
     moon.hidden = !dark;
+    cloud?.setPalette(dark ? CLOUD_PALETTES.dark : CLOUD_PALETTES.light);
   };
 
   toggle.addEventListener("click", () => {
-    const next = isDark() ? "light" : "dark";
+    const next = isDarkTheme() ? "light" : "dark";
     root.setAttribute("data-theme", next);
     try {
       localStorage.setItem("anansi-theme", next);
@@ -62,10 +75,36 @@ function initTheme() {
     sync();
   });
 
+  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", sync);
   sync();
 }
 
 initTheme();
+
+/* ---------- landing <-> dashboard ---------- */
+function showDashboard() {
+  document.getElementById("landing").hidden = true;
+  document.getElementById("features").hidden = true;
+  document.getElementById("dashboard").hidden = false;
+  // The composer is the dashboard's input; it stays hidden unless the local
+  // interactive server answered the /api/health probe further down.
+  document.getElementById("composer-dock").hidden = !interactive;
+  window.scrollTo(0, 0);
+  history.replaceState(null, "", "#dashboard");
+}
+
+function showLanding() {
+  document.getElementById("landing").hidden = false;
+  document.getElementById("features").hidden = false;
+  document.getElementById("dashboard").hidden = true;
+  document.getElementById("composer-dock").hidden = true;
+  window.scrollTo(0, 0);
+  history.replaceState(null, "", "#");
+}
+
+document.getElementById("launch-dashboard").addEventListener("click", showDashboard);
+document.getElementById("launch-dashboard-hero").addEventListener("click", showDashboard);
+document.getElementById("back-home").addEventListener("click", showLanding);
 
 async function loadFeed() {
   const response = await fetch("./feed.json", { cache: "no-store" });
@@ -459,9 +498,8 @@ function renderAll({ contracts, events, topics, session = null }) {
 // The interactive backend (server.mjs) only ever runs locally — a public page
 // that lets anyone trigger a real scrape would spend your Bright Data credits
 // on strangers. Probe for it rather than assuming; on the static GitHub Pages
-// deployment this request 404s and the ask bar simply stays hidden, and
+// deployment this request 404s and the composer simply stays hidden, and
 // metrics/activity fall back to the static feed with no live polling.
-let interactive = null;
 let latestFeed = null;
 
 /** Pulls a fresh snapshot from the interactive server and re-renders. No-op on the static deployment. */
@@ -475,7 +513,9 @@ try {
   const health = await fetch("./api/health").then((r) => (r.ok ? r.json() : null));
   if (health?.ok) {
     interactive = health;
-    document.getElementById("ask-form").hidden = false;
+    // Only reveal the dock if the dashboard is already the visible view;
+    // otherwise showDashboard() handles it when the user launches.
+    document.getElementById("composer-dock").hidden = document.getElementById("dashboard").hidden;
     const hint = document.getElementById("ask-hint");
     hint.hidden = false;
     hint.textContent =
@@ -498,6 +538,9 @@ try {
     document.getElementById("timeline-heading").prepend(el("span", "live-dot"));
     setInterval(() => refreshLive().catch(() => {}), 4000);
   }
+
+  // Reloading while on the dashboard should land back on the dashboard.
+  if (location.hash === "#dashboard") showDashboard();
 } catch (cause) {
   renderEmpty(`No feed found (${cause.message}).`);
 }

@@ -1,0 +1,37 @@
+[
+  {
+    "model_name": "Nimbus Titan",
+    "input_price_usd_per_mtok": "$15.00",
+    "output_price_usd_per_mtok": "$75.00",
+    "context_window_tokens": 200000,
+    "lifecycle_status": "GA"
+  },
+  {
+    "model_name": "Nimbus Vale",
+    "input_price_usd_per_mtok": "$3.00",
+    "output_price_usd_per_mtok": "$15.00",
+    "context_window_tokens": 200000,
+    "lifecycle_status": "GA"
+  },
+  {
+    "model_name": "Nimbus Wisp",
+    "input_price_usd_per_mtok": "$0.80",
+    "output_price_usd_per_mtok": "$4.00",
+    "context_window_tokens": 200000,
+    "lifecycle_status": "GA"
+  },
+  {
+    "model_name": "Nimbus Cirrus",
+    "input_price_usd_per_mtok": "$1.10",
+    "output_price_usd_per_mtok": "$5.50",
+    "context_window_tokens": 128000,
+    "lifecycle_status": "Deprecated 2026-11-01"
+  },
+  {
+    "model_name": "Nimbus Strato",
+    "input_price_usd_per_mtok": "$6.40",
+    "output_price_usd_per_mtok": "$32.00",
+    "context_window_tokens": 400000,
+    "lifecycle_status": "Preview"
+  }
+]

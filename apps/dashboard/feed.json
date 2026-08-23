@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-23T05:13:19.897Z",
+  "generatedAt": "2026-08-23T07:39:05.475Z",
   "contracts": [
     {
       "id": "breakroom-pricing",
@@ -156,6 +156,234 @@
             "verdict": "healthy",
             "fillRate": 1,
             "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "GA",
+                "GA",
+                "GA"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          }
+        ],
+        "shapeSymptoms": [],
+        "healRecommended": false
+      }
+    },
+    {
+      "kind": "run",
+      "at": "2026-08-23T07:35:57.401Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "rowCount": 5,
+      "durationMs": 0
+    },
+    {
+      "kind": "health",
+      "at": "2026-08-23T07:35:57.403Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "report": {
+        "contractId": "nimbus-ai-model-pricing",
+        "collectorId": "c_mt59mh6q1omairtns1",
+        "checkedAt": "2026-08-23T07:35:57.403Z",
+        "rowCount": 5,
+        "baselineRowCount": null,
+        "status": "degraded",
+        "score": 0.6,
+        "fields": [
+          {
+            "field": "model_name",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "Nimbus Titan",
+                "Nimbus Vale",
+                "Nimbus Wisp"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "input_price_usd_per_mtok",
+            "verdict": "missing",
+            "fillRate": 0,
+            "minFillRate": 0.3,
+            "rowsChecked": 5,
+            "rowsFilled": 0,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [],
+              "bad": []
+            },
+            "symptoms": [
+              "\"input_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing."
+            ]
+          },
+          {
+            "field": "output_price_usd_per_mtok",
+            "verdict": "missing",
+            "fillRate": 0,
+            "minFillRate": 0.3,
+            "rowsChecked": 5,
+            "rowsFilled": 0,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [],
+              "bad": []
+            },
+            "symptoms": [
+              "\"output_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing."
+            ]
+          },
+          {
+            "field": "context_window_tokens",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "200000",
+                "200000",
+                "200000"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "lifecycle_status",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "GA",
+                "GA",
+                "GA"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          }
+        ],
+        "shapeSymptoms": [],
+        "healRecommended": true
+      }
+    },
+    {
+      "kind": "run",
+      "at": "2026-08-23T07:38:24.627Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "rowCount": 5,
+      "durationMs": 0
+    },
+    {
+      "kind": "health",
+      "at": "2026-08-23T07:38:24.628Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "report": {
+        "contractId": "nimbus-ai-model-pricing",
+        "collectorId": "c_mt59mh6q1omairtns1",
+        "checkedAt": "2026-08-23T07:38:24.628Z",
+        "rowCount": 5,
+        "baselineRowCount": null,
+        "status": "healthy",
+        "score": 1,
+        "fields": [
+          {
+            "field": "model_name",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "Nimbus Titan",
+                "Nimbus Vale",
+                "Nimbus Wisp"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "input_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "$15.00",
+                "$3.00",
+                "$0.80"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "output_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "$75.00",
+                "$15.00",
+                "$4.00"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "context_window_tokens",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "200000",
+                "200000",
+                "200000"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "lifecycle_status",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
             "rowsChecked": 5,
             "rowsFilled": 5,
             "invalidCount": 0,
