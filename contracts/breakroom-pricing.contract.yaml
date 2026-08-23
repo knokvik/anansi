@@ -5,7 +5,7 @@ id: breakroom-pricing
 name: Break Room — Nimbus AI model pricing
 
 # Replaced by the real c_* id from `bdata scraper create`. See docs/COLLECTORS.md.
-collectorId: c_pendingcreate
+collectorId: c_mt59mh6q1omairtns1
 
 canaries:
   - https://knokvik.github.io/anansi/

@@ -34,6 +34,17 @@ function isRowArray(value: unknown): value is Row[] {
  */
 export function extractRows(payload: unknown): Row[] | null {
   if (payload === null || payload === undefined) return null;
+
+  // A length-1 array is almost always one page's worth of result, not one row:
+  // a Discovery-type run against a single page returns `[{ models: [...] }]`,
+  // the whole list nested inside a field. Try unwrapping that before falling
+  // through to the "the outer array itself is already the rows" check below —
+  // otherwise a real multi-item result gets flattened into a single fake row.
+  if (Array.isArray(payload) && payload.length === 1) {
+    const nested = extractRows(payload[0]);
+    if (nested !== null) return nested;
+  }
+
   if (isRowArray(payload)) return payload;
   if (Array.isArray(payload)) return payload.length === 0 ? [] : null;
   if (typeof payload !== "object") return null;

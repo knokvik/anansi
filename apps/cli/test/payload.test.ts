@@ -28,6 +28,29 @@ describe("extractRows", () => {
   it("does not mistake an array of strings for rows", () => {
     expect(extractRows({ data: ["a", "b"] })).toBeNull();
   });
+
+  it("unwraps a real bdata Discovery envelope: one page, nested item list", () => {
+    // Captured verbatim from `bdata scraper run c_mt59mh6q1omairtns1 <breakroom url>`:
+    // a single-element array wrapping one page, with the actual list nested
+    // under a field name the client has no way to predict ahead of time.
+    const envelope = [
+      {
+        models: [
+          { model_name: "Nimbus Titan", input_price_usd_per_mtok: 15, output_price_usd_per_mtok: 75 },
+          { model_name: "Nimbus Vale", input_price_usd_per_mtok: 3, output_price_usd_per_mtok: 15 },
+        ],
+        product_page_url: "https://knokvik.github.io/anansi/",
+        input: { url: "https://knokvik.github.io/anansi/" },
+      },
+    ];
+    expect(extractRows(envelope)).toEqual(envelope[0]!.models);
+  });
+
+  it("still treats a genuine single row as one row when it has no nested list", () => {
+    expect(extractRows([{ model_name: "Solo Model", price: 9 }])).toEqual([
+      { model_name: "Solo Model", price: 9 },
+    ]);
+  });
 });
 
 describe("status helpers", () => {

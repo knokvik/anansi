@@ -1,5 +1,5 @@
 import pc from "picocolors";
-import type { HealthReport, SupervisionOutcome } from "@anansi/core";
+import type { AnswerResult, HealthReport, SupervisionOutcome } from "@anansi/core";
 
 const STATUS_COLOR = {
   healthy: pc.green,
@@ -69,5 +69,62 @@ export function renderOutcome(outcome: SupervisionOutcome): string {
   }
 
   lines.push(`\n  ${RESOLUTION_LABEL[outcome.resolution]}  ${outcome.summary}`);
+  return lines.join("\n");
+}
+
+const ANSWER_STATUS_LABEL: Record<AnswerResult["status"], string> = {
+  cache_hit: pc.cyan("CACHE HIT"),
+  bootstrapped: pc.green("BOOTSTRAPPED"),
+  refreshed: pc.green("REFRESHED"),
+  refresh_failed: pc.red("REFRESH FAILED"),
+};
+
+export function renderAnswer(result: AnswerResult): string {
+  const lines: string[] = [];
+  const { entry } = result;
+
+  lines.push(`\n${pc.bold(result.query)} ${pc.dim(`[${result.topicKey}]`)}`);
+  lines.push(`  ${ANSWER_STATUS_LABEL[result.status]}  ${pc.dim(entry.collectorId)}`);
+
+  if (result.status === "cache_hit") {
+    const expiresAt = new Date(new Date(entry.lastConfirmedFresh).getTime() + entry.ttlSeconds * 1000);
+    lines.push(pc.dim(`  confirmed fresh ${entry.lastConfirmedFresh} — next check ${expiresAt.toISOString()}`));
+  }
+
+  lines.push("");
+  for (const row of entry.rows) {
+    const identity = String(row[entry.identityField] ?? "").trim().toLowerCase().replace(/\s+/g, " ");
+    const change = result.novelty?.changes.find((c) => c.identity === identity);
+    const badge = change?.kind === "new" ? pc.green(" NEW") : change?.kind === "changed" ? pc.yellow(" CHANGED") : "";
+    lines.push(`  • ${JSON.stringify(row)}${badge}`);
+    if (change?.deltas) {
+      for (const delta of change.deltas) {
+        lines.push(pc.yellow(`      ${delta.field}: ${JSON.stringify(delta.from)} → ${JSON.stringify(delta.to)}`));
+      }
+    }
+  }
+
+  if (result.novelty && !result.novelty.isBaseline) {
+    lines.push(
+      pc.dim(
+        `\n  ${result.novelty.newCount} new · ${result.novelty.changedCount} changed · ` +
+          `${result.novelty.unchangedCount} unchanged · ${result.novelty.removedCount} removed since last check`,
+      ),
+    );
+  }
+
+  if (result.freshness?.changed) {
+    lines.push(pc.dim(`  freshness: ${result.freshness.reason} (now ${result.freshness.ttlSeconds}s)`));
+  }
+
+  if (result.escalation.missingFields.length > 0) {
+    lines.push(
+      pc.dim(
+        `  cost tier: discovery only; would escalate ${result.escalation.identities.length} row(s) for ` +
+          `${result.escalation.missingFields.join(", ")}`,
+      ),
+    );
+  }
+
   return lines.join("\n");
 }

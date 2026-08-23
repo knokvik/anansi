@@ -7,7 +7,7 @@ from any language or scheduler, with no deployment step. Healing never changes i
 
 | Contract | Collector ID | Type | Target | Created |
 | --- | --- | --- | --- | --- |
-| `breakroom-pricing` | `c_pendingcreate` | Discovery | https://knokvik.github.io/anansi/ | pending |
+| `breakroom-pricing` | `c_mt59mh6q1omairtns1` | Discovery | https://knokvik.github.io/anansi/ | 2026-08-23 |
 
 ## Creating a collector
 

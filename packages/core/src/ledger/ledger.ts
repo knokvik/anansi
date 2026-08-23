@@ -15,7 +15,16 @@ export type LedgerEvent =
   | { kind: "heal_gated"; at: string; contractId: string; collectorId: string; verdict: GateVerdict }
   | { kind: "heal_settled"; at: string; contractId: string; collectorId: string; decision: "approve" | "reject"; ok: boolean; detail: string }
   | { kind: "verified"; at: string; contractId: string; collectorId: string; report: HealthReport }
-  | { kind: "escalated"; at: string; contractId: string; collectorId: string; reason: string };
+  | { kind: "escalated"; at: string; contractId: string; collectorId: string; reason: string }
+  | {
+      kind: "freshness_adjusted";
+      at: string;
+      contractId: string;
+      collectorId: string;
+      fromTtlSeconds: number;
+      toTtlSeconds: number;
+      reason: string;
+    };
 
 export class Ledger {
   constructor(private readonly path: string) {}

@@ -4,15 +4,18 @@ import { dirname, resolve } from "node:path";
 import { Command } from "commander";
 import pc from "picocolors";
 import {
+  KnowledgeStore,
   Ledger,
+  Snapshots,
   loadContracts,
+  resolveQuery,
   superviseContract,
   type ScraperClient,
   type SupervisionOutcome,
 } from "@anansi/core";
 import { BdataClient } from "./bdata-client.js";
 import { FixtureClient } from "./fixture-client.js";
-import { renderOutcome } from "./render.js";
+import { renderAnswer, renderOutcome } from "./render.js";
 
 const program = new Command();
 
@@ -147,6 +150,59 @@ program
       process.exitCode = EXIT.error;
     }
   });
+
+program
+  .command("ask <query...>")
+  .description("Answer a free-text query: served from cache when fresh, scraped and scored when not.")
+  .option("-c, --contracts <dir>", "directory of *.contract.yaml files", "./contracts")
+  .option("-l, --ledger <path>", "append-only event log", "./data/ledger.jsonl")
+  .option("-k, --knowledge <dir>", "Knowledge Store directory", "./data/knowledge")
+  .option("-s, --snapshots <dir>", "novelty-diff snapshot directory", "./data/snapshots")
+  .option("--url <url>", "target URL — required the first time a topic is asked")
+  .option("--collector <id>", "c_* collector to bootstrap against — required alongside --url")
+  .option("--replay <dir>", "replay recorded fixtures instead of calling Bright Data")
+  .option("-v, --verbose", "echo every Bright Data CLI invocation")
+  .action(
+    async (
+      queryParts: string[],
+      options: {
+        contracts: string;
+        ledger: string;
+        knowledge: string;
+        snapshots: string;
+        url?: string;
+        collector?: string;
+        replay?: string;
+        verbose?: boolean;
+      },
+    ) => {
+      const query = queryParts.join(" ");
+      const log = options.verbose ? (message: string) => console.log(pc.dim(`  ${message}`)) : undefined;
+      const client: ScraperClient = options.replay
+        ? new FixtureClient(resolve(options.replay), log ?? (() => {}))
+        : new BdataClient(log ? { log } : {});
+
+      try {
+        const result = await resolveQuery(
+          query,
+          { ...(options.url ? { url: options.url } : {}), ...(options.collector ? { collectorId: options.collector } : {}) },
+          {
+            client,
+            store: new KnowledgeStore(resolve(options.knowledge)),
+            snapshots: new Snapshots(resolve(options.snapshots)),
+            ledger: new Ledger(resolve(options.ledger)),
+            contractsDir: resolve(options.contracts),
+            ...(log ? { log } : {}),
+          },
+        );
+        console.log(renderAnswer(result));
+        if (result.status === "refresh_failed") process.exitCode = EXIT.unresolved;
+      } catch (cause) {
+        console.error(pc.red((cause as Error).message));
+        process.exitCode = EXIT.error;
+      }
+    },
+  );
 
 program.parseAsync().catch((cause: unknown) => {
   console.error(pc.red((cause as Error).message));

@@ -12,3 +12,25 @@ export {
   type SuperviseDeps,
   type SupervisionOutcome,
 } from "./supervisor/supervise.js";
+
+export { bootstrapContract, type BootstrapInput } from "./contract/bootstrap.js";
+export { detectNovelty, type FieldDelta, type NoveltyReport, type RowChange, type RowChangeKind } from "./health/novelty.js";
+export { Snapshots } from "./ledger/snapshots.js";
+export {
+  adjustTtl,
+  defaultTtlSeconds,
+  inferFreshnessClass,
+  type FreshnessAdjustment,
+} from "./knowledge/freshness.js";
+export { isFresh, shouldBeStanding } from "./knowledge/gate.js";
+export { planEscalation, type EscalationPlan } from "./knowledge/escalate.js";
+export { planTopicKey } from "./knowledge/planner.js";
+export { KnowledgeStore } from "./knowledge/store.js";
+export type { FreshnessClass, KnowledgeEntry, ScrapeTier } from "./knowledge/types.js";
+export {
+  resolveQuery,
+  type AnswerResult,
+  type AnswerStatus,
+  type ResolveDeps,
+  type ResolveOptions,
+} from "./knowledge/resolve.js";

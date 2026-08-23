@@ -6,7 +6,7 @@
 
 | Contract | Collector ID | Target |
 | --- | --- | --- |
-| `breakroom-pricing` | `c_pendingcreate` | https://knokvik.github.io/anansi/ |
+| `breakroom-pricing` | `c_mt59mh6q1omairtns1` | https://knokvik.github.io/anansi/ |
 
 ## Working with Bright Data
 

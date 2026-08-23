@@ -9,7 +9,9 @@ out/
 .env.*
 !.env.example
 
-# Runtime state
+# Runtime state — data/ledger.jsonl and the dashboard feed are committed
+# deliberately by the Sentinel workflow (an audit trail belongs in the repo).
+# Everything else under data/ is local scratch state.
 .anansi/
-data/ledger.json
-data/runs/
+data/*
+!data/ledger.jsonl

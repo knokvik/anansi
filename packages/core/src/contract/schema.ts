@@ -80,6 +80,14 @@ export const Contract = z
      * heal. Set conservatively — healing is not free.
      */
     healBelowScore: z.number().min(0).max(1).default(0.8),
+
+    /**
+     * The field that identifies "the same row" across two runs — a product name,
+     * a model id, a URL. Novelty detection matches on this rather than row
+     * position, since row order and count both shift as a source adds or removes
+     * items. Defaults to the first required string/url field when omitted.
+     */
+    identityField: z.string().min(1).optional(),
   })
   .strict()
   .superRefine((contract, ctx) => {
@@ -93,6 +101,14 @@ export const Contract = z
         });
       }
       seen.add(field.name);
+    }
+
+    if (contract.identityField && !contract.fields.some((f) => f.name === contract.identityField)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `identityField "${contract.identityField}" is not one of this contract's fields`,
+        path: ["identityField"],
+      });
     }
   });
 
