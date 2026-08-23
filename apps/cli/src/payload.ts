@@ -19,12 +19,29 @@ const PREFERRED_KEYS = [
   "preview_rows",
 ];
 
-function isRowArray(value: unknown): value is Row[] {
-  return (
-    Array.isArray(value) &&
-    value.length > 0 &&
-    value.every((entry) => typeof entry === "object" && entry !== null && !Array.isArray(entry))
-  );
+function isRow(value: unknown): value is Row {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** Bright Data occasionally truncates a large preview array for display with a trailing marker like `"3 more items"`. */
+function isTruncationMarker(value: unknown): boolean {
+  return typeof value === "string" && /^\d+\s+more\b/i.test(value.trim());
+}
+
+/**
+ * Accept an array as a row set if every entry is a row object, or every
+ * non-row entry is a truncation marker — and return only the real rows.
+ * Approving a heal off a *summarized* preview would otherwise read as "every
+ * field is missing" for the entries that got collapsed into that marker,
+ * which is a display artifact, not a broken extraction.
+ */
+function filterRows(value: unknown): Row[] | null {
+  if (!Array.isArray(value) || value.length === 0) return null;
+  const rows = value.filter(isRow);
+  if (rows.length === 0) return null;
+  const rest = value.filter((entry) => !isRow(entry));
+  if (rest.length > 0 && !rest.every(isTruncationMarker)) return null;
+  return rows;
 }
 
 /**
@@ -45,7 +62,8 @@ export function extractRows(payload: unknown): Row[] | null {
     if (nested !== null) return nested;
   }
 
-  if (isRowArray(payload)) return payload;
+  const direct = filterRows(payload);
+  if (direct !== null) return direct;
   if (Array.isArray(payload)) return payload.length === 0 ? [] : null;
   if (typeof payload !== "object") return null;
 
@@ -53,7 +71,8 @@ export function extractRows(payload: unknown): Row[] | null {
 
   for (const key of PREFERRED_KEYS) {
     const candidate = record[key];
-    if (isRowArray(candidate)) return candidate;
+    const rows = filterRows(candidate);
+    if (rows !== null) return rows;
     if (Array.isArray(candidate) && candidate.length === 0) return [];
   }
 
@@ -61,7 +80,8 @@ export function extractRows(payload: unknown): Row[] | null {
   const queue: unknown[] = Object.values(record);
   while (queue.length > 0) {
     const next = queue.shift();
-    if (isRowArray(next)) return next;
+    const rows = filterRows(next);
+    if (rows !== null) return rows;
     if (next && typeof next === "object" && !Array.isArray(next)) {
       queue.push(...Object.values(next as Record<string, unknown>));
     }

@@ -1,4 +1,4 @@
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -69,6 +69,27 @@ describe("resolveQuery", () => {
   it("throws when a new topic is asked without a url and collectorId", async () => {
     const client = new FakeClient([bootstrapRows]);
     await expect(resolveQuery("unknown topic", {}, { client, ...deps })).rejects.toThrow(/new topic/);
+  });
+
+  it("leaves no contract file behind when the bootstrap probe itself comes back broken", async () => {
+    // A real shape captured from a genuinely broken collector: the payload
+    // parser's "unwrap a length-1 wrapper" fallback finds no usable nested
+    // list and falls back to the wrapper object itself as one degenerate row.
+    const brokenProbe: Row[] = [
+      { models: [], product_page_url: "https://example.com", input: { url: "https://example.com" } },
+    ];
+    const client = new FakeClient([brokenProbe]);
+    await expect(
+      resolveQuery("broken topic", { url: "https://example.com", collectorId: "c_abc" }, { client, ...deps }),
+    ).rejects.toThrow(/came back broken/);
+
+    let files: string[] = [];
+    try {
+      files = await readdir(deps.contractsDir);
+    } catch {
+      // contractsDir never created at all is an equally valid pass
+    }
+    expect(files).toHaveLength(0);
   });
 
   it("serves a repeat ask from cache without touching the network", async () => {

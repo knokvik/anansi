@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-23T03:49:15.379Z",
+  "generatedAt": "2026-08-23T04:15:55.827Z",
   "contracts": [
     {
       "id": "breakroom-pricing",
       "name": "Break Room — Nimbus AI model pricing",
-      "collectorId": "c_pendingcreate",
+      "collectorId": "c_mt59mh6q1omairtns1",
       "canaries": [
         "https://knokvik.github.io/anansi/"
       ],
@@ -55,263 +55,75 @@
         "maxRowShrinkRatio": 0.4
       },
       "healBelowScore": 0.8
+    },
+    {
+      "id": "nimbus-ai-model-pricing",
+      "name": "nimbus ai model pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "canaries": [
+        "https://knokvik.github.io/anansi/"
+      ],
+      "fields": [
+        {
+          "name": "model_name",
+          "description": "\"model_name\" as observed when this topic was first scraped for the query: nimbus ai model pricing",
+          "type": "string",
+          "required": true,
+          "minFillRate": 0.9
+        },
+        {
+          "name": "input_price_usd_per_mtok",
+          "description": "\"input_price_usd_per_mtok\" as observed when this topic was first scraped for the query: nimbus ai model pricing",
+          "type": "number",
+          "required": true,
+          "minFillRate": 0.9
+        },
+        {
+          "name": "output_price_usd_per_mtok",
+          "description": "\"output_price_usd_per_mtok\" as observed when this topic was first scraped for the query: nimbus ai model pricing",
+          "type": "number",
+          "required": true,
+          "minFillRate": 0.9
+        },
+        {
+          "name": "context_window_tokens",
+          "description": "\"context_window_tokens\" as observed when this topic was first scraped for the query: nimbus ai model pricing",
+          "type": "integer",
+          "required": true,
+          "minFillRate": 0.9
+        },
+        {
+          "name": "lifecycle_status",
+          "description": "\"lifecycle_status\" as observed when this topic was first scraped for the query: nimbus ai model pricing",
+          "type": "string",
+          "required": true,
+          "minFillRate": 0.9
+        }
+      ],
+      "shape": {
+        "minRows": 1,
+        "maxRowShrinkRatio": 0.5
+      },
+      "healBelowScore": 0.75
     }
   ],
   "events": [
     {
       "kind": "run",
-      "at": "2026-08-22T17:24:17.681Z",
+      "at": "2026-08-23T04:15:28.419Z",
       "contractId": "breakroom-pricing",
-      "collectorId": "c_pendingcreate",
+      "collectorId": "c_mt59mh6q1omairtns1",
       "rowCount": 5,
-      "durationMs": 1
+      "durationMs": 5126
     },
     {
       "kind": "health",
-      "at": "2026-08-22T17:24:17.684Z",
+      "at": "2026-08-23T04:15:28.422Z",
       "contractId": "breakroom-pricing",
       "report": {
         "contractId": "breakroom-pricing",
-        "collectorId": "c_pendingcreate",
-        "checkedAt": "2026-08-22T17:24:17.684Z",
-        "rowCount": 5,
-        "baselineRowCount": null,
-        "status": "broken",
-        "score": 0.6,
-        "fields": [
-          {
-            "field": "model_name",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "Nimbus Titan",
-                "Nimbus Vale",
-                "Nimbus Wisp"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "input_price_usd_per_mtok",
-            "verdict": "missing",
-            "fillRate": 0,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 0,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [],
-              "bad": []
-            },
-            "symptoms": [
-              "\"input_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing."
-            ]
-          },
-          {
-            "field": "output_price_usd_per_mtok",
-            "verdict": "missing",
-            "fillRate": 0,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 0,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [],
-              "bad": []
-            },
-            "symptoms": [
-              "\"output_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing."
-            ]
-          },
-          {
-            "field": "context_window_tokens",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "200000",
-                "200000",
-                "200000"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          },
-          {
-            "field": "lifecycle_status",
-            "verdict": "healthy",
-            "fillRate": 1,
-            "minFillRate": 1,
-            "rowsChecked": 5,
-            "rowsFilled": 5,
-            "invalidCount": 0,
-            "samples": {
-              "ok": [
-                "GA",
-                "GA",
-                "GA"
-              ],
-              "bad": []
-            },
-            "symptoms": []
-          }
-        ],
-        "shapeSymptoms": [],
-        "healRecommended": true
-      }
-    },
-    {
-      "kind": "heal_proposed",
-      "at": "2026-08-22T17:24:17.684Z",
-      "contractId": "breakroom-pricing",
-      "collectorId": "c_pendingcreate",
-      "prompt": "The scraper is failing its data contract on 5 scraped row(s). Repair the extraction so every field below is populated again.\n- \"input_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing. It must contain: Price in US dollars to process one million input tokens, as a plain number (type: number).\n- \"output_price_usd_per_mtok\" returned no value on any of the 5 rows — the extraction rule matches nothing. It must contain: Price in US dollars to generate one million output tokens, as a plain number (type: number).\nLeave these already-working fields exactly as they are: model_name, context_window_tokens, lifecycle_status.",
-      "targetedFields": [
-        "input_price_usd_per_mtok",
-        "output_price_usd_per_mtok"
-      ]
-    },
-    {
-      "kind": "heal_gated",
-      "at": "2026-08-22T17:24:17.685Z",
-      "contractId": "breakroom-pricing",
-      "collectorId": "c_pendingcreate",
-      "verdict": {
-        "decision": "approve",
-        "reason": "Contract score improved 0.6 → 1; repaired input_price_usd_per_mtok, output_price_usd_per_mtok with no regressions.",
-        "previewReport": {
-          "contractId": "breakroom-pricing",
-          "collectorId": "c_pendingcreate",
-          "checkedAt": "2026-08-22T17:24:17.685Z",
-          "rowCount": 5,
-          "baselineRowCount": null,
-          "status": "healthy",
-          "score": 1,
-          "fields": [
-            {
-              "field": "model_name",
-              "verdict": "healthy",
-              "fillRate": 1,
-              "minFillRate": 1,
-              "rowsChecked": 5,
-              "rowsFilled": 5,
-              "invalidCount": 0,
-              "samples": {
-                "ok": [
-                  "Nimbus Titan",
-                  "Nimbus Vale",
-                  "Nimbus Wisp"
-                ],
-                "bad": []
-              },
-              "symptoms": []
-            },
-            {
-              "field": "input_price_usd_per_mtok",
-              "verdict": "healthy",
-              "fillRate": 1,
-              "minFillRate": 1,
-              "rowsChecked": 5,
-              "rowsFilled": 5,
-              "invalidCount": 0,
-              "samples": {
-                "ok": [
-                  "$15.00",
-                  "$3.00",
-                  "$0.80"
-                ],
-                "bad": []
-              },
-              "symptoms": []
-            },
-            {
-              "field": "output_price_usd_per_mtok",
-              "verdict": "healthy",
-              "fillRate": 1,
-              "minFillRate": 1,
-              "rowsChecked": 5,
-              "rowsFilled": 5,
-              "invalidCount": 0,
-              "samples": {
-                "ok": [
-                  "$75.00",
-                  "$15.00",
-                  "$4.00"
-                ],
-                "bad": []
-              },
-              "symptoms": []
-            },
-            {
-              "field": "context_window_tokens",
-              "verdict": "healthy",
-              "fillRate": 1,
-              "minFillRate": 1,
-              "rowsChecked": 5,
-              "rowsFilled": 5,
-              "invalidCount": 0,
-              "samples": {
-                "ok": [
-                  "200000",
-                  "200000",
-                  "200000"
-                ],
-                "bad": []
-              },
-              "symptoms": []
-            },
-            {
-              "field": "lifecycle_status",
-              "verdict": "healthy",
-              "fillRate": 1,
-              "minFillRate": 1,
-              "rowsChecked": 5,
-              "rowsFilled": 5,
-              "invalidCount": 0,
-              "samples": {
-                "ok": [
-                  "GA",
-                  "GA",
-                  "GA"
-                ],
-                "bad": []
-              },
-              "symptoms": []
-            }
-          ],
-          "shapeSymptoms": [],
-          "healRecommended": false
-        }
-      }
-    },
-    {
-      "kind": "heal_settled",
-      "at": "2026-08-22T17:24:17.685Z",
-      "contractId": "breakroom-pricing",
-      "collectorId": "c_pendingcreate",
-      "decision": "approve",
-      "ok": true,
-      "detail": "replayed approve"
-    },
-    {
-      "kind": "verified",
-      "at": "2026-08-22T17:24:17.685Z",
-      "contractId": "breakroom-pricing",
-      "collectorId": "c_pendingcreate",
-      "report": {
-        "contractId": "breakroom-pricing",
-        "collectorId": "c_pendingcreate",
-        "checkedAt": "2026-08-22T17:24:17.685Z",
+        "collectorId": "c_mt59mh6q1omairtns1",
+        "checkedAt": "2026-08-23T04:15:28.422Z",
         "rowCount": 5,
         "baselineRowCount": null,
         "status": "healthy",
@@ -345,9 +157,9 @@
             "invalidCount": 0,
             "samples": {
               "ok": [
-                "$15.00",
-                "$3.00",
-                "$0.80"
+                "15",
+                "3",
+                "0.8"
               ],
               "bad": []
             },
@@ -363,9 +175,9 @@
             "invalidCount": 0,
             "samples": {
               "ok": [
-                "$75.00",
-                "$15.00",
-                "$4.00"
+                "75",
+                "15",
+                "4"
               ],
               "bad": []
             },
@@ -411,6 +223,293 @@
         "shapeSymptoms": [],
         "healRecommended": false
       }
+    },
+    {
+      "kind": "run",
+      "at": "2026-08-23T04:15:36.020Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "rowCount": 5,
+      "durationMs": 0
+    },
+    {
+      "kind": "health",
+      "at": "2026-08-23T04:15:36.023Z",
+      "contractId": "nimbus-ai-model-pricing",
+      "report": {
+        "contractId": "nimbus-ai-model-pricing",
+        "collectorId": "c_mt59mh6q1omairtns1",
+        "checkedAt": "2026-08-23T04:15:36.023Z",
+        "rowCount": 5,
+        "baselineRowCount": null,
+        "status": "healthy",
+        "score": 1,
+        "fields": [
+          {
+            "field": "model_name",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "Nimbus Titan",
+                "Nimbus Vale",
+                "Nimbus Wisp"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "input_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "15",
+                "3",
+                "0.8"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "output_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "75",
+                "15",
+                "4"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "context_window_tokens",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "200000",
+                "200000",
+                "200000"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "lifecycle_status",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 0.9,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "GA",
+                "GA",
+                "GA"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          }
+        ],
+        "shapeSymptoms": [],
+        "healRecommended": false
+      }
+    },
+    {
+      "kind": "run",
+      "at": "2026-08-23T04:15:41.340Z",
+      "contractId": "breakroom-pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "rowCount": 5,
+      "durationMs": 5193
+    },
+    {
+      "kind": "health",
+      "at": "2026-08-23T04:15:41.343Z",
+      "contractId": "breakroom-pricing",
+      "report": {
+        "contractId": "breakroom-pricing",
+        "collectorId": "c_mt59mh6q1omairtns1",
+        "checkedAt": "2026-08-23T04:15:41.343Z",
+        "rowCount": 5,
+        "baselineRowCount": 5,
+        "status": "healthy",
+        "score": 1,
+        "fields": [
+          {
+            "field": "model_name",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "Nimbus Titan",
+                "Nimbus Vale",
+                "Nimbus Wisp"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "input_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "15",
+                "3",
+                "0.8"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "output_price_usd_per_mtok",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "75",
+                "15",
+                "4"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "context_window_tokens",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "200000",
+                "200000",
+                "200000"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          },
+          {
+            "field": "lifecycle_status",
+            "verdict": "healthy",
+            "fillRate": 1,
+            "minFillRate": 1,
+            "rowsChecked": 5,
+            "rowsFilled": 5,
+            "invalidCount": 0,
+            "samples": {
+              "ok": [
+                "GA",
+                "GA",
+                "GA"
+              ],
+              "bad": []
+            },
+            "symptoms": []
+          }
+        ],
+        "shapeSymptoms": [],
+        "healRecommended": false
+      }
+    }
+  ],
+  "topics": [
+    {
+      "topicKey": "nimbus-ai-model-pricing",
+      "query": "nimbus ai model pricing",
+      "contractId": "nimbus-ai-model-pricing",
+      "collectorId": "c_mt59mh6q1omairtns1",
+      "rows": [
+        {
+          "model_name": "Nimbus Titan",
+          "input_price_usd_per_mtok": 15,
+          "output_price_usd_per_mtok": 75,
+          "context_window_tokens": 200000,
+          "lifecycle_status": "GA"
+        },
+        {
+          "model_name": "Nimbus Vale",
+          "input_price_usd_per_mtok": 3,
+          "output_price_usd_per_mtok": 15,
+          "context_window_tokens": 200000,
+          "lifecycle_status": "GA"
+        },
+        {
+          "model_name": "Nimbus Wisp",
+          "input_price_usd_per_mtok": 0.8,
+          "output_price_usd_per_mtok": 4,
+          "context_window_tokens": 200000,
+          "lifecycle_status": "GA"
+        },
+        {
+          "model_name": "Nimbus Cirrus",
+          "input_price_usd_per_mtok": 1.1,
+          "output_price_usd_per_mtok": 5.5,
+          "context_window_tokens": 128000,
+          "lifecycle_status": "Deprecated 2026-11-01"
+        },
+        {
+          "model_name": "Nimbus Strato",
+          "input_price_usd_per_mtok": 6.4,
+          "output_price_usd_per_mtok": 32,
+          "context_window_tokens": 400000,
+          "lifecycle_status": "Preview"
+        }
+      ],
+      "identityField": "model_name",
+      "freshnessClass": "volatile",
+      "ttlSeconds": 21600,
+      "lastConfirmedFresh": "2026-08-23T04:15:36.028Z",
+      "standing": false,
+      "askCount": 1,
+      "tier": "discovery",
+      "escalatedCount": 0,
+      "lastStatus": "healthy",
+      "lastScore": 1
     }
   ]
 }

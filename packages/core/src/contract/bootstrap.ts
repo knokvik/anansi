@@ -1,20 +1,32 @@
 import type { Row } from "../health/evaluate.js";
 import { Contract, FieldContract } from "./schema.js";
 
-/** True when every non-null value in `values` parses cleanly as a number. */
+/**
+ * Parse a value as a number, or null when it isn't one.
+ *
+ * Stripping non-digit characters from ordinary text (`"Nimbus Titan"`) leaves
+ * an empty string, and `Number("")` is `0` — a real number, not an error. That
+ * quirk alone was enough to misclassify every all-text field as numeric.
+ * Guarding against an empty (or bare sign/decimal) result after stripping is
+ * what keeps a name from being inferred as an integer.
+ */
+function toNumber(value: unknown): number | null {
+  if (typeof value === "number") return Number.isFinite(value) ? value : null;
+  if (typeof value !== "string") return null;
+  const cleaned = value.replace(/[^0-9.\-]/g, "");
+  if (cleaned === "" || cleaned === "-" || cleaned === ".") return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) ? n : null;
+}
+
 function allNumeric(values: unknown[]): boolean {
-  return values.every((v) => {
-    if (typeof v === "number") return Number.isFinite(v);
-    if (typeof v !== "string") return false;
-    const cleaned = v.replace(/[^0-9.\-]/g, "");
-    return cleaned !== "" && cleaned !== "-" && Number.isFinite(Number(cleaned));
-  });
+  return values.every((v) => toNumber(v) !== null);
 }
 
 function allIntegers(values: unknown[]): boolean {
   return values.every((v) => {
-    const n = typeof v === "number" ? v : Number(String(v).replace(/[^0-9.\-]/g, ""));
-    return Number.isFinite(n) && Number.isInteger(n);
+    const n = toNumber(v);
+    return n !== null && Number.isInteger(n);
   });
 }
 

@@ -51,6 +51,29 @@ describe("extractRows", () => {
       { model_name: "Solo Model", price: 9 },
     ]);
   });
+
+  it("strips a trailing truncation marker from a summarized heal preview", () => {
+    // Captured from a real `bdata scraper heal` approval-gate preview: a large
+    // result gets summarized to a couple of items plus a literal string marker.
+    const envelope = [
+      {
+        models: [
+          { model_name: "Nimbus Titan", input_price_usd_per_mtok: 15 },
+          { model_name: "Nimbus Vale", input_price_usd_per_mtok: 3 },
+          "3 more items",
+        ],
+        product_page_url: "https://knokvik.github.io/anansi/",
+      },
+    ];
+    expect(extractRows(envelope)).toEqual([
+      { model_name: "Nimbus Titan", input_price_usd_per_mtok: 15 },
+      { model_name: "Nimbus Vale", input_price_usd_per_mtok: 3 },
+    ]);
+  });
+
+  it("does not treat an array of only truncation markers as rows", () => {
+    expect(extractRows({ data: ["3 more items"] })).toBeNull();
+  });
 });
 
 describe("status helpers", () => {

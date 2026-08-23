@@ -97,4 +97,19 @@ describe("judgeHeal", () => {
     expect(verdict.reason).toContain("broke previously healthy field");
     expect(verdict.reason).toContain("model_name");
   });
+
+  it("approves a correct fix even when the preview itself was truncated to fewer rows than the contract requires", () => {
+    // Real Bright Data behaviour: a heal's approval-gate preview is a
+    // summarized sanity check and can come back shorter than a full run
+    // (observed: 5 rows summarized to 2). The contract here requires
+    // shape.minRows: 2 — pass exactly one row, correct in every field, and
+    // confirm the gate judges it on correctness, not on looking short.
+    const verdict = judgeHeal({
+      contract: pricingContract,
+      before,
+      previewRows: [repairedRows[0]!],
+      targetedFields: plan.targetedFields,
+    });
+    expect(verdict.decision).toBe("approve");
+  });
 });

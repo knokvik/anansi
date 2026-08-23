@@ -30,6 +30,7 @@ interface CommonOptions {
   contract?: string;
   replay?: string;
   verbose?: boolean;
+  knowledge: string;
 }
 
 function withCommonOptions(command: Command): Command {
@@ -38,7 +39,12 @@ function withCommonOptions(command: Command): Command {
     .option("-l, --ledger <path>", "append-only event log", "./data/ledger.jsonl")
     .option("--contract <id>", "limit the sweep to a single contract id")
     .option("--replay <dir>", "replay recorded fixtures instead of calling Bright Data")
-    .option("-v, --verbose", "echo every Bright Data CLI invocation");
+    .option("-v, --verbose", "echo every Bright Data CLI invocation")
+    .option(
+      "-k, --knowledge <dir>",
+      "Knowledge Store directory — a bootstrapped topic only joins the sweep once it's standing",
+      "./data/knowledge",
+    );
 }
 
 function makeClient(options: CommonOptions, contractId: string): ScraperClient {
@@ -54,7 +60,19 @@ const EXIT = { ok: 0, unresolved: 1, error: 2 } as const;
 
 async function sweep(options: CommonOptions, dryRun: boolean): Promise<number> {
   const all = await loadContracts(resolve(options.contracts));
-  const contracts = options.contract ? all.filter((c) => c.id === options.contract) : all;
+  let contracts = options.contract ? all.filter((c) => c.id === options.contract) : all;
+
+  if (!options.contract) {
+    // A topic bootstrapped by `ask` writes its contract into the same
+    // directory the scheduled fleet reads from — but it hasn't earned a
+    // place in an unattended sweep just because it exists. Only a topic
+    // asked more than once (KnowledgeEntry.standing) joins the sweep here;
+    // everything else stays resolved on demand.
+    const knowledge = new KnowledgeStore(resolve(options.knowledge));
+    const topics = await knowledge.list();
+    const notYetStanding = new Set(topics.filter((t) => !t.standing).map((t) => t.contractId));
+    contracts = contracts.filter((c) => !notYetStanding.has(c.id));
+  }
 
   if (contracts.length === 0) {
     console.error(pc.red(`No contracts found in ${options.contracts}.`));
@@ -112,19 +130,20 @@ withCommonOptions(
     const ledger = new Ledger(resolve(options.ledger));
     const events = await ledger.read();
     const contracts = await loadContracts(resolve(options.contracts));
+    const topics = await new KnowledgeStore(resolve(options.knowledge)).list();
 
-    if (events.length === 0) {
-      console.log(pc.yellow("Ledger is empty — run `anansi check` or `anansi watch` first."));
+    if (events.length === 0 && topics.length === 0) {
+      console.log(pc.yellow("Nothing to report yet — run `anansi check`, `anansi watch`, or `anansi ask` first."));
       return;
     }
 
-    const feed = { generatedAt: new Date().toISOString(), contracts, events };
+    const feed = { generatedAt: new Date().toISOString(), contracts, events, topics };
     await mkdir(dirname(resolve(options.out)), { recursive: true });
     await writeFile(resolve(options.out), JSON.stringify(feed, null, 2), "utf8");
 
     const counts = new Map<string, number>();
     for (const event of events) counts.set(event.kind, (counts.get(event.kind) ?? 0) + 1);
-    console.log(pc.bold(`${events.length} ledger events across ${contracts.length} contract(s):`));
+    console.log(pc.bold(`${events.length} ledger events across ${contracts.length} contract(s), ${topics.length} Radar topic(s):`));
     for (const [kind, count] of [...counts].sort()) {
       console.log(`  ${String(count).padStart(4)}  ${kind}`);
     }

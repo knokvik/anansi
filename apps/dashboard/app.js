@@ -133,6 +133,10 @@ const EVENT_TEXT = {
     e.report.status === "healthy" ? "ok" : "bad",
   ],
   escalated: (e) => [`Escalated to a human — ${e.reason}`, "bad"],
+  freshness_adjusted: (e) => [
+    `Freshness interval ${e.fromTtlSeconds}s → <b>${e.toTtlSeconds}s</b> — ${e.reason}`,
+    "act",
+  ],
 };
 
 function renderTimeline(events) {
@@ -171,19 +175,89 @@ function renderEmpty(message) {
     `<div class="empty">${message}<br><br>Run <code>pnpm anansi watch --replay ./fixtures</code> then <code>pnpm anansi report</code>.</div>`;
 }
 
+function relativeTime(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const abs = Math.abs(ms);
+  const unit = abs < 3600_000 ? [Math.round(abs / 60_000), "m"] : abs < 86_400_000 ? [Math.round(abs / 3600_000), "h"] : [Math.round(abs / 86_400_000), "d"];
+  return ms >= 0 ? `${unit[0]}${unit[1]} ago` : `in ${unit[0]}${unit[1]}`;
+}
+
+function renderTopicCard(topic) {
+  const card = el("div", "card");
+  const status = topic.lastStatus ?? "healthy";
+
+  const head = el("div", "card-head");
+  head.append(
+    el("h2", "topic-query", topic.query),
+    el("span", "cid", topic.collectorId),
+    el("span", `pill ${status}`, status),
+  );
+
+  const body = el("div", "card-body");
+
+  const scoreRow = el("div", "score-row");
+  const num = el("div", "score-num", topic.lastScore.toFixed(2));
+  num.style.color = scoreColor(topic.lastScore);
+  const track = el("div", "track");
+  const fill = el("i");
+  fill.style.width = `${topic.lastScore * 100}%`;
+  fill.style.background = scoreColor(topic.lastScore);
+  track.append(fill);
+  scoreRow.append(num, track, el("div", "score-meta", `${topic.rows.length} rows · asked ${topic.askCount}×${topic.standing ? " · standing" : ""}`));
+  body.append(scoreRow);
+
+  const expiresAt = new Date(topic.lastConfirmedFresh).getTime() + topic.ttlSeconds * 1000;
+  const stale = Date.now() > expiresAt;
+  const freshness = el(
+    "div",
+    `freshness ${stale ? "stale" : ""}`,
+    `${stale ? "due for a check" : "confirmed fresh"} ${relativeTime(topic.lastConfirmedFresh)} · TTL ${Math.round(topic.ttlSeconds / 3600)}h · ${topic.freshnessClass}`,
+  );
+  body.append(freshness);
+
+  const rowList = el("div", "row-list");
+  for (const row of topic.rows.slice(0, 8)) {
+    const identity = String(row[topic.identityField] ?? "");
+    rowList.append(el("div", "row-item", `${identity} — ${JSON.stringify(row).slice(0, 140)}`));
+  }
+  body.append(rowList);
+
+  card.append(head, body);
+  return card;
+}
+
 try {
   const feed = await loadFeed();
   const contracts = new Map(feed.contracts.map((c) => [c.id, c]));
-  const reports = latestHealth(feed.events);
+  const topics = feed.topics ?? [];
+  const topicContractIds = new Set(topics.map((t) => t.contractId));
 
-  if (reports.size === 0) {
-    renderEmpty("The ledger has no health checks yet.");
+  // A Radar topic's run/health events land in the same ledger as the scheduled
+  // fleet's — they share one audit trail by design. Keep them out of the fleet
+  // grid here (they get their own section below) by contract id.
+  const allReports = latestHealth(feed.events);
+  const reports = new Map([...allReports].filter(([contractId]) => !topicContractIds.has(contractId)));
+
+  if (reports.size === 0 && topics.length === 0) {
+    renderEmpty("Nothing recorded yet.");
   } else {
-    renderFleetStat(reports);
-    const host = document.getElementById("collectors");
-    for (const [contractId, report] of reports) {
-      host.append(renderCollectorCard(contracts.get(contractId), report));
+    if (reports.size > 0) {
+      renderFleetStat(reports);
+      const host = document.getElementById("collectors");
+      for (const [contractId, report] of reports) {
+        host.append(renderCollectorCard(contracts.get(contractId), report));
+      }
+    } else {
+      document.getElementById("collectors").innerHTML =
+        '<div class="empty">No scheduled collectors yet — every result below came from an ask.</div>';
     }
+
+    if (topics.length > 0) {
+      document.getElementById("radar-section").hidden = false;
+      const topicsHost = document.getElementById("topics");
+      for (const topic of topics) topicsHost.append(renderTopicCard(topic));
+    }
+
     renderTimeline(feed.events);
   }
   document.getElementById("generated").textContent = `feed generated ${timeOf(feed.generatedAt)}`;

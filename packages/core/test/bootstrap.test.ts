@@ -31,6 +31,14 @@ describe("bootstrapContract", () => {
     expect(normalized[0]).not.toHaveProperty("modelName");
   });
 
+  it("does not misclassify an all-text field as integer", () => {
+    // "Nimbus Titan" has no digits at all — stripping non-numeric characters
+    // leaves "", and Number("") is 0, a valid integer, unless guarded against.
+    const { contract } = bootstrapContract(params);
+    const name = contract.fields.find((f) => f.name === "model_name");
+    expect(name?.type).toBe("string");
+  });
+
   it("infers numeric fields as required with a fill rate of 1.0", () => {
     const { contract } = bootstrapContract(params);
     const price = contract.fields.find((f) => f.name === "input_price_usd_per_mtok");

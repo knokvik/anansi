@@ -1,0 +1,40 @@
+id: nimbus-ai-model-pricing
+name: nimbus ai model pricing
+collectorId: c_mt59mh6q1omairtns1
+canaries:
+  - https://knokvik.github.io/anansi/
+fields:
+  - name: model_name
+    description: '"model_name" as observed when this topic was first scraped for the
+      query: nimbus ai model pricing'
+    type: string
+    required: true
+    minFillRate: 0.9
+  - name: input_price_usd_per_mtok
+    description: '"input_price_usd_per_mtok" as observed when this topic was first
+      scraped for the query: nimbus ai model pricing'
+    type: number
+    required: true
+    minFillRate: 0.9
+  - name: output_price_usd_per_mtok
+    description: '"output_price_usd_per_mtok" as observed when this topic was first
+      scraped for the query: nimbus ai model pricing'
+    type: number
+    required: true
+    minFillRate: 0.9
+  - name: context_window_tokens
+    description: '"context_window_tokens" as observed when this topic was first
+      scraped for the query: nimbus ai model pricing'
+    type: integer
+    required: true
+    minFillRate: 0.9
+  - name: lifecycle_status
+    description: '"lifecycle_status" as observed when this topic was first scraped
+      for the query: nimbus ai model pricing'
+    type: string
+    required: true
+    minFillRate: 0.9
+shape:
+  minRows: 1
+  maxRowShrinkRatio: 0.5
+healBelowScore: 0.75

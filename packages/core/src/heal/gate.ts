@@ -43,7 +43,15 @@ export function judgeHeal(input: GateInput): GateVerdict {
     };
   }
 
-  const after = evaluateRun(contract, previewRows, {
+  // A heal's approval-gate preview is a summarized sanity check, not a full run —
+  // Bright Data itself truncates a large one (observed: a 5-row preview
+  // collapsed to 2 rows plus a literal "3 more items" marker). Scoring that
+  // against the contract's real row-count/shrink expectations would reject a
+  // genuinely correct fix for looking short. Judge the preview purely on
+  // whether the fields it does show are correct; the full row count is
+  // re-enforced for real once the approved fix is verified with an actual run.
+  const previewContract: Contract = { ...contract, shape: { minRows: 0, maxRowShrinkRatio: 1 } };
+  const after = evaluateRun(previewContract, previewRows, {
     baselineRowCount: before.baselineRowCount,
   });
 

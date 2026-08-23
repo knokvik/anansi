@@ -114,8 +114,11 @@ export async function resolveQuery(
     });
     contract = bootstrap.contract;
     rows = bootstrap.rows;
-    await writeContractFile(deps.contractsDir, contract);
     bootstrapped = true;
+    // Not written to disk yet: a bootstrap probe that turns out broken (see
+    // the status check below) throws instead of producing a topic, and a
+    // stray contract file for one that never actually resolved is just
+    // litter. Written only once we know this bootstrap is going to stick.
   }
 
   await deps.ledger.append({
@@ -195,6 +198,10 @@ export async function resolveQuery(
       return { topicKey, query, status: "refresh_failed", entry: existing, health, novelty: null, freshness: null, escalation: NO_ESCALATION };
     }
     throw new Error(`Could not bootstrap "${query}" — the first run itself came back broken (score ${health.score}).`);
+  }
+
+  if (bootstrapped) {
+    await writeContractFile(deps.contractsDir, contract);
   }
 
   const previousRows = existing ? existing.rows : await deps.snapshots.read(contract.id);
